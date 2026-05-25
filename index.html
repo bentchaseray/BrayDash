@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>Bray Films -- Studio OS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -559,7 +559,7 @@
     display: none;
     position: fixed; bottom: 0; left: 0; right: 0;
     height: 60px;
-    background: var(--sidebar);
+    background: var(--card);
     border-top: 1px solid var(--line);
     z-index: 50;
     padding-bottom: env(safe-area-inset-bottom);
@@ -596,53 +596,58 @@
     /* App shell */
     .app { grid-template-columns: 1fr; }
     .sidebar { display: none; }
-    main { padding: 16px 14px 90px; max-height: none; overflow-y: visible; }
+    main { padding: 16px 14px calc(70px + env(safe-area-inset-bottom)); max-height: none; overflow-y: visible; }
     .bottom-tab-bar { display: flex; }
 
-    /* Topbar: stack vertically */
-    .topbar { flex-direction: column; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
-    .top-right { width: 100%; justify-content: space-between; flex-shrink: unset; }
-    h1.page-title { font-size: 22px; }
-    .subtitle { font-size: 13px; }
-    .crumb { font-size: 10px; }
+    /* Topbar: horizontal layout, compact -- title left, buttons right */
+    .topbar { flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; flex-wrap: nowrap; }
+    .topbar > div:first-child { min-width: 0; flex: 1; }
+    .subtitle { display: none; }
+    .crumb { font-size: 10px; margin-bottom: 2px; }
+    h1.page-title { font-size: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .top-right { flex-shrink: 0; gap: 6px; }
+    .clock-widget { display: none; }
+    .new-btn { padding: 8px 10px; font-size: 12px; gap: 5px; }
+    .icon-btn { width: 36px; height: 36px; }
 
     /* Stat grid: 2x2 */
     .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
     .stat { padding: 14px; }
-    .stat-value { font-size: 22px; }
-    .stat-unit { font-size: 14px; }
+    .stat-value { font-size: 1.4rem; }
+    .stat-unit { font-size: 13px; }
     .stat-badge { width: 32px; height: 32px; border-radius: 9px; }
     .stat-delta { font-size: 11px; margin-top: 8px; }
+    .spark-wrap { display: none; }
 
-    /* Body grid: single column, right col moves below */
+    /* Body grid: single column */
     .body-grid { grid-template-columns: 1fr; gap: 14px; }
 
-    /* Pipeline: single column */
+    /* Pipeline: single column, proper card sizing */
     .lead-grid { grid-template-columns: 1fr; gap: 10px; }
+    .lead-card { padding: 14px 16px; }
+    .lead-name { font-size: 1rem; }
+    .lead-action-text { font-size: 0.8rem; }
+    .lead-value { font-size: 1rem; }
+    .lead-sub { font-size: 0.72rem; }
 
-    /* Upcoming Shoots: horizontal scroll */
-    .shoots-row {
-      display: flex; overflow-x: auto; padding: 12px; gap: 12px;
-      -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; scrollbar-width: none;
-    }
-    .shoots-row::-webkit-scrollbar { display: none; }
-    .shoot-sm { min-width: 260px; flex-shrink: 0; scroll-snap-align: start; }
+    /* Upcoming Shoots: vertical stack, full-width cards */
+    .shoots-row { display: grid; grid-template-columns: 1fr; gap: 10px; padding: 12px; }
+    .shoot-sm { min-width: unset; flex-shrink: unset; scroll-snap-align: unset; width: 100%; margin-bottom: 0; }
+    .shoot-cd { font-size: 2rem; }
+    .shoot-title { font-size: 0.9rem; }
 
-    /* Leads table: hide Last Contact column */
+    /* Leads table */
     .col-lc { display: none; }
     table.ltbl { white-space: normal; }
     .tbl-action { max-width: 140px; }
     .tbl-wrap { padding: 0 10px 14px; }
 
-    /* Revenue table: hide Date column */
+    /* Revenue table */
     .col-rv-date { display: none; }
 
     /* Modals: full screen */
     .modal-overlay, .modal-backdrop { place-items: stretch; }
-    .modal, .modal-box {
-      width: 100% !important; max-width: 100% !important;
-      max-height: 100% !important; border-radius: 0 !important;
-    }
+    .modal, .modal-box { width: 100% !important; max-width: 100% !important; max-height: 100% !important; border-radius: 0 !important; }
 
     /* Skills grid: 2 columns */
     .skills-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -652,33 +657,49 @@
     /* Shoots page: single column */
     .shoots-pg-grid { grid-template-columns: 1fr; }
 
-    /* Meta Ads connect banner: stack */
+    /* Meta Ads */
     .meta-connect-banner { flex-direction: column; align-items: flex-start; gap: 12px; }
     .meta-row3 { grid-template-columns: 1fr; }
 
-    /* Publishing: platform row 2x2, content grid 1 col */
+    /* Publishing */
     .content-grid { grid-template-columns: 1fr; }
 
+    /* Daily Checklist: badge wraps below text, smaller sizing */
+    .cat-badge { font-size: 0.65rem; padding: 2px 6px; }
+    .dc-row { min-height: 44px; flex-wrap: wrap; }
+    .dc-body { min-width: 0; flex: 1; }
+
     /* Touch targets: minimum 44px */
-    .dc-row { min-height: 44px; }
     .warm-row { min-height: 44px; padding: 10px 12px; }
     .cl-item { min-height: 44px; }
     .pri { min-height: 44px; }
     .pill, .filter-pill { min-height: 36px; padding: 8px 12px; }
-    .nav-item, .tab-btn { min-height: 44px; }
+    .tab-btn { min-height: 44px; }
 
     /* Filter pills: wrap */
     .filter-row { gap: 6px; }
 
-    /* Welcome strip: tighter */
-    .welcome-strip { margin-bottom: 12px; padding: 10px 14px; }
-    .welcome-serif { font-size: 13px; }
+    /* Panel headers: tighter */
+    .panel-head { padding: 12px 14px; }
+    .panel-head h3 { font-size: 0.85rem; }
+    .ph-meta, .ph-link { font-size: 0.72rem; }
 
-    /* Rev bar: smaller font */
+    /* Welcome strip */
+    .welcome-strip { margin-bottom: 12px; padding: 10px 14px; }
+    .welcome-serif { font-size: 0.85rem; }
+    .welcome-meta { font-size: 0.72rem; line-height: 1.3; }
+
+    /* Rev bar */
     .rev-big { font-size: 22px; }
 
-    /* Warm list: full width */
+    /* Warm list */
     .warm-name { font-size: 12px; }
+    .warm-name small { font-size: 0.72rem; }
+
+    /* Meta / label / sub text */
+    .lead-meta { font-size: 0.72rem; line-height: 1.3; }
+    .tbl-org, .tbl-days { font-size: 0.72rem; }
+    .dc-meta { font-size: 0.7rem; }
   }
 </style>
 </head>
