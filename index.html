@@ -426,6 +426,127 @@
   ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
+
+  /* -- Nav count badge -- */
+  .nav-count { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; color: var(--ink-3); background: rgba(255,255,255,.06); border: 1px solid var(--line); padding: 2px 6px; border-radius: 999px; }
+  .nav-item.active .nav-count { color: var(--gold); background: rgba(196,154,60,.10); border-color: rgba(196,154,60,.20); }
+
+  /* -- Welcome strip -- */
+  .welcome-strip { border-left: 3px solid var(--gold); background: var(--card); border-radius: 10px; padding: 12px 16px; margin-bottom: 18px; }
+  .welcome-serif { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 14px; color: var(--ink); }
+  .welcome-meta { font-size: 12px; color: var(--ink-3); margin-top: 3px; }
+
+  /* -- Daily Checklist panel -- */
+  .dc-progress-wrap { padding: 12px 18px 0; }
+  .dc-progress-label { font-size: 11px; color: var(--ink-3); letter-spacing: .12em; display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .dc-progress-bar { height: 4px; border-radius: 2px; background: rgba(255,255,255,.05); overflow: hidden; }
+  .dc-progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold-2), var(--gold)); border-radius: 2px; transition: width .35s ease; }
+  .dc-list { padding: 8px 8px 10px; }
+  .dc-row { display: flex; align-items: flex-start; gap: 12px; padding: 10px 12px; border-radius: 10px; cursor: pointer; transition: background .15s; }
+  .dc-row:hover { background: rgba(255,255,255,.025); }
+  .dc-chk { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--ink-3); display: grid; place-items: center; flex-shrink: 0; margin-top: 1px; transition: all .15s; }
+  .dc-row.done .dc-chk { background: var(--gold); border-color: var(--gold); color: #1a1305; }
+  .dc-body { flex: 1; min-width: 0; }
+  .dc-text { font-size: 13px; font-weight: 500; color: var(--ink); line-height: 1.3; }
+  .dc-row.done .dc-text { text-decoration: line-through; color: var(--ink-3); }
+  .dc-meta { font-size: 11px; color: var(--ink-3); margin-top: 3px; }
+  .dc-row.done .dc-meta { opacity: .5; }
+  .cat-badge { font-size: 9px; letter-spacing: .14em; font-weight: 700; padding: 3px 7px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+  .cat-urgent    { color: #ffd1d1; background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.25); }
+  .cat-outreach  { color: #bfdbfe; background: rgba(96,165,250,.12); border: 1px solid rgba(96,165,250,.25); }
+  .cat-follow-up { color: #fed7aa; background: rgba(245,158,11,.12); border: 1px solid rgba(245,158,11,.25); }
+  .cat-content   { color: #a7f3d0; background: rgba(52,211,153,.12); border: 1px solid rgba(52,211,153,.25); }
+  .cat-pipeline  { color: #fde68a; background: rgba(196,154,60,.12); border: 1px solid rgba(196,154,60,.25); }
+  .reset-btn { font-size: 11px; color: var(--ink-3); background: transparent; border: 1px solid var(--line); padding: 4px 10px; border-radius: 6px; cursor: pointer; }
+  .reset-btn:hover { color: var(--ink-2); border-color: var(--line-2); }
+  .day-complete-txt { color: var(--gold); font-size: 11px; letter-spacing: .14em; font-weight: 600; }
+
+  /* -- Meta Ads page -- */
+  .connect-banner { background: linear-gradient(135deg, var(--card-2), var(--card)); border: 1px solid var(--line-2); border-radius: 16px; padding: 40px; text-align: center; margin-bottom: 24px; }
+  .connect-banner h2 { margin: 0 0 10px; font-size: 20px; }
+  .connect-banner p { color: var(--ink-2); font-size: 14px; line-height: 1.6; max-width: 480px; margin: 0 auto 20px; }
+  .connect-btn { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(180deg, var(--gold-2), var(--gold)); color: #1a1305; font-weight: 600; font-size: 13px; padding: 10px 20px; border-radius: 10px; border: 0; cursor: pointer; box-shadow: 0 6px 14px rgba(196,154,60,.25); }
+  .strategy-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .strategy-card { background: var(--card-2); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+  .strategy-card h4 { margin: 0 0 8px; font-size: 13px; font-weight: 700; color: var(--gold); }
+  .strategy-card p { margin: 0; font-size: 12px; color: var(--ink-3); line-height: 1.5; }
+
+  /* -- Publishing Schedule page -- */
+  .how-it-works { display: flex; align-items: flex-start; gap: 14px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin-bottom: 22px; font-size: 13px; color: var(--ink-2); line-height: 1.55; }
+  .hiw-dismiss { margin-left: auto; flex-shrink: 0; font-size: 11px; color: var(--ink-3); cursor: pointer; padding: 2px 0; }
+  .hiw-dismiss:hover { color: var(--ink-2); }
+  .content-bank-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(256px, 1fr)); gap: 14px; margin-bottom: 28px; }
+  .content-card { background: linear-gradient(180deg, var(--card-2), var(--card)); border: 1px solid var(--line); border-radius: 12px; padding: 18px; transition: all .18s ease; }
+  .content-card:hover { border-color: rgba(196,154,60,.25); transform: translateY(-1px); }
+  .cc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+  .cc-shoot { font-size: 14px; font-weight: 600; }
+  .cc-date  { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+  .ct-badge { font-size: 9px; letter-spacing: .14em; font-weight: 700; padding: 4px 8px; border-radius: 999px; white-space: nowrap; }
+  .ct-reel  { color: #bfdbfe; background: rgba(96,165,250,.12); border: 1px solid rgba(96,165,250,.25); }
+  .ct-bts   { color: #fed7aa; background: rgba(245,158,11,.12); border: 1px solid rgba(245,158,11,.25); }
+  .ct-testimonial { color: #a7f3d0; background: rgba(52,211,153,.12); border: 1px solid rgba(52,211,153,.25); }
+  .ct-photo { color: #fde68a; background: rgba(196,154,60,.12); border: 1px solid rgba(196,154,60,.25); }
+  .ct-story { color: #e9d5ff; background: rgba(167,139,250,.12); border: 1px solid rgba(167,139,250,.25); }
+  .cc-status-row { margin-bottom: 10px; }
+  .cc-hook { font-size: 12px; color: var(--ink-2); line-height: 1.5; font-style: italic; margin-bottom: 14px; }
+  .cc-foot { display: flex; align-items: center; justify-content: space-between; }
+  .cc-post-btn { font-size: 11px; color: var(--gold); background: rgba(196,154,60,.10); border: 1px solid rgba(196,154,60,.20); padding: 5px 10px; border-radius: 6px; cursor: pointer; }
+  .cc-post-btn:hover { background: rgba(196,154,60,.18); }
+  .cal-outer { overflow-x: auto; margin-bottom: 28px; }
+  .cal-grid { display: grid; grid-template-columns: 90px repeat(7, 1fr); gap: 4px; min-width: 680px; }
+  .cal-week-lbl { display: flex; align-items: center; font-size: 10px; color: var(--ink-3); letter-spacing: .14em; text-transform: uppercase; padding: 0 8px; font-weight: 600; }
+  .cal-day-hdr { text-align: center; font-size: 10px; letter-spacing: .14em; color: var(--ink-3); padding: 6px 0; font-weight: 600; }
+  .cal-day { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 8px; min-height: 58px; transition: all .15s; }
+  .cal-day.has-post { border-color: rgba(196,154,60,.30); background: linear-gradient(180deg, rgba(196,154,60,.05), var(--card)); cursor: pointer; }
+  .cal-day.has-post:hover { border-color: rgba(196,154,60,.50); }
+  .cal-day-num { font-size: 10px; color: var(--ink-3); margin-bottom: 4px; font-family: 'JetBrains Mono', monospace; }
+  .cal-post-title { font-size: 10.5px; font-weight: 600; color: var(--ink); line-height: 1.3; }
+  .cal-post-type  { font-size: 9px; color: var(--gold); margin-top: 2px; letter-spacing: .1em; }
+  .cal-empty-hint { font-size: 10px; color: var(--line-2); }
+  .platform-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .platform-card { background: var(--card-2); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+  .platform-card h4 { margin: 0 0 4px; font-size: 13px; font-weight: 600; }
+  .pc-freq-lbl { font-size: 11px; color: var(--ink-3); margin-bottom: 12px; }
+  .pc-target { font-size: 22px; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--gold); margin-bottom: 4px; }
+  .pc-label { font-size: 11px; color: var(--ink-3); }
+  .pc-input { background: var(--card); border: 1px solid var(--line); color: var(--ink); font-family: 'JetBrains Mono', monospace; font-size: 13px; padding: 6px 10px; border-radius: 6px; width: 60px; margin-top: 8px; }
+  .pc-input:focus { outline: none; border-color: var(--gold); }
+
+  /* -- Meta Ads page (new) -- */
+  .meta-connect-banner { display: flex; align-items: center; justify-content: space-between; gap: 20px; background: linear-gradient(135deg, var(--card-2), var(--card)); border: 1px solid var(--line-2); border-radius: 14px; padding: 20px 24px; margin-bottom: 24px; }
+  .meta-connect-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .meta-connect-sub { font-size: 12px; color: var(--ink-3); }
+  .meta-form { background: var(--card-2); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .meta-input { background: var(--card); border: 1px solid var(--line); color: var(--ink); font-family: 'Inter', sans-serif; font-size: 13px; padding: 8px 12px; border-radius: 8px; width: 100%; outline: none; }
+  .meta-input:focus { border-color: rgba(196,154,60,.5); }
+  .meta-row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .meta-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .meta-table th { text-align: left; font-size: 10px; letter-spacing: .14em; color: var(--ink-3); padding: 8px 10px; border-bottom: 1px solid var(--line); font-weight: 600; }
+  .meta-table td { padding: 10px; border-bottom: 1px solid var(--line); color: var(--ink-2); vertical-align: middle; }
+  .meta-table tr:last-child td { border-bottom: none; }
+  .meta-table tr:hover td { background: rgba(255,255,255,.02); }
+  .meta-strat-card { background: var(--card-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .meta-strat-title { font-size: 12px; font-weight: 700; color: var(--gold); margin-bottom: 6px; letter-spacing: .04em; }
+  .meta-strat-body { font-size: 12px; color: var(--ink-3); line-height: 1.55; }
+  .empty-state { text-align: center; color: var(--ink-3); font-size: 13px; padding: 32px 0; }
+
+  /* -- Publishing page (new) -- */
+  .content-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .content-card { background: linear-gradient(180deg, var(--card-2), var(--card)); border: 1px solid var(--line); border-radius: 12px; padding: 16px; cursor: pointer; transition: all .18s ease; }
+  .content-card:hover { border-color: rgba(196,154,60,.28); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,.3); }
+  .content-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .content-type { font-size: 9px; letter-spacing: .16em; font-weight: 700; color: var(--blue); background: rgba(96,165,250,.10); border: 1px solid rgba(96,165,250,.20); padding: 3px 7px; border-radius: 999px; }
+  .content-status { font-size: 11px; font-weight: 600; }
+  .content-title { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 4px; line-height: 1.35; }
+  .content-platform { font-size: 11px; color: var(--ink-3); margin-bottom: 8px; }
+  .content-hook { font-size: 12px; color: var(--ink-2); line-height: 1.5; font-style: italic; }
+  .platform-name { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+  .platform-target { font-size: 22px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .filter-pill { font-size: 11px; letter-spacing: .1em; font-weight: 600; padding: 5px 12px; border-radius: 999px; background: var(--card-2); border: 1px solid var(--line); color: var(--ink-3); cursor: pointer; transition: all .15s; }
+  .filter-pill:hover { border-color: var(--line-2); color: var(--ink-2); }
+  .filter-pill.active { background: rgba(196,154,60,.12); border-color: rgba(196,154,60,.35); color: var(--gold); }
+  .mono { font-family: 'JetBrains Mono', monospace; }
 </style>
 </head>
 <body>
@@ -694,20 +815,33 @@ const I = {
   refresh: p => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...p}><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>,
   copy:    p => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...p}><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>,
   x:       p => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" {...p}><path d="M18 6L6 18M6 6l12 12"/></svg>,
+  spark:   p => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...p}><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.64 5.64l2.12 2.12M16.24 16.24l2.12 2.12M16.24 7.76l2.12-2.12M5.64 18.36l2.12-2.12"/></svg>,
   phone:   p => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...p}><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.86 9.11 19.79 19.79 0 01.73 2.49 2 2 0 012.72.5h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L7.09 8.91a16 16 0 006 6l1.27-.91a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>,
   ig:      p => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...p}><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>,
 };
 
 /* ═══ Sidebar ═══ */
 const NAV = [
-  { id: 'dash',    label: 'Command Center', icon: 'grid'   },
-  { id: 'leads',   label: 'Leads',          icon: 'flame'  },
-  { id: 'shoots',  label: 'Shoots',         icon: 'cam'    },
-  { id: 'revenue', label: 'Revenue',        icon: 'dollar' },
-  { id: 'skills',  label: 'Skills',         icon: 'award'  },
+  { id: 'dash',       label: 'Command Center', icon: 'grid',   count: '' },
+  { id: 'leads',      label: 'Leads',          icon: 'flame',  count: '7' },
+  { id: 'meta',       label: 'Meta Ads',       icon: 'spark',  count: '' },
+  { id: 'publishing', label: 'Publishing',     icon: 'cal',    count: '6' },
+  { id: 'shoots',     label: 'Shoots',         icon: 'cam',    count: '4' },
+  { id: 'revenue',    label: 'Revenue',        icon: 'dollar', count: '' },
+  { id: 'skills',     label: 'Skills',         icon: 'award',  count: '' },
 ];
 
 function Sidebar({ active, go }) {
+  const navItem = n => (
+    <div key={n.id} className={'nav-item ' + (active === n.id ? 'active' : '')} onClick={() => go(n.id)}>
+      <span className="nav-ic">{I[n.icon]()}</span>
+      <span>{n.label}</span>
+      {n.count && <span className="nav-count">{n.count}</span>}
+    </div>
+  );
+  const ws  = NAV.filter(n => ['dash','leads'].includes(n.id));
+  const mkt = NAV.filter(n => ['meta','publishing'].includes(n.id));
+  const biz = NAV.filter(n => ['shoots','revenue','skills'].includes(n.id));
   return (
     <aside className="sidebar">
       <div className="logo">
@@ -716,12 +850,14 @@ function Sidebar({ active, go }) {
       </div>
       <div className="nav-section">
         <div className="nav-label">Workspace</div>
-        {NAV.map(n => (
-          <div key={n.id} className={'nav-item ' + (active === n.id ? 'active' : '')} onClick={() => go(n.id)}>
-            <span className="nav-ic">{I[n.icon]()}</span>
-            <span>{n.label}</span>
-          </div>
-        ))}
+        {ws.map(navItem)}
+      </div>
+      <div className="nav-section">
+        <div className="nav-label">Marketing</div>
+        {mkt.map(navItem)}
+      </div>
+      <div className="nav-section">
+        {biz.map(navItem)}
       </div>
       <div className="nav-section">
         <div className="nav-label">Tools</div>
@@ -1126,6 +1262,69 @@ function ModalManager({ modal, onClose }) {
 }
 
 /* ════════════════════════════════════════════
+   DAILY CHECKLIST DATA
+════════════════════════════════════════════ */
+const DAILY_CHECKLIST = [
+  { id: 'c1', category: 'URGENT',    text: 'Call Hotel Seville owner -- visit before May 28', meta: 'Matt Bell referral · $500' },
+  { id: 'c2', category: 'OUTREACH',  text: 'Send Day 1 DM to Cliff House Inn',                meta: 'Toinette Madison referral · no outreach sent yet' },
+  { id: 'c3', category: 'OUTREACH',  text: 'Send Day 1 DM to Low Gap Cafe',                  meta: 'Toinette Madison referral · no outreach sent yet' },
+  { id: 'c4', category: 'FOLLOW-UP', text: 'Fade Factory -- call or walk in',                 meta: '13 days since first text · Ray Ray wants to buy' },
+  { id: 'c5', category: 'CONTENT',   text: 'Post one piece of content today',                 meta: 'Stories, Reel, or BTS clip · consistency builds pipeline' },
+  { id: 'c6', category: 'PIPELINE',  text: 'Check Airtable for new leads from Scout',        meta: 'n8n runs Monday 7am · review and score new entries' },
+];
+
+function WelcomeStrip({ done, remaining }) {
+  const hr   = new Date().getHours();
+  const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  const msg   = hr < 12
+    ? (remaining > 0 ? `You have ${remaining} unchecked item${remaining !== 1 ? 's' : ''}. Start with Hotel Seville.` : 'All items checked. Day complete.')
+    : (done > 0 ? `${done} item${done !== 1 ? 's' : ''} done today. ${remaining} remaining.` : `${remaining} items waiting. Pick one and go.`);
+  return (
+    <div className="welcome-strip">
+      <span className="welcome-serif">{greet}, Bentley. Today is {today}.</span>
+      <div className="welcome-meta">{msg}</div>
+    </div>
+  );
+}
+
+function DailyChecklist({ checks, onToggle, onReset }) {
+  const total   = DAILY_CHECKLIST.length;
+  const done    = DAILY_CHECKLIST.filter(c => checks[c.id]).length;
+  const allDone = done === total;
+  return (
+    <div className="panel" style={allDone ? { boxShadow: '0 0 0 1px rgba(196,154,60,.45), 0 12px 30px rgba(196,154,60,.08), 0 2px 8px rgba(0,0,0,.25)' } : {}}>
+      <div className="panel-head">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <h3>Daily Checklist</h3>
+          {allDone && <span className="day-complete-txt">Day complete</span>}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span className="ph-meta">{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+          <button className="reset-btn" onClick={e => { e.stopPropagation(); onReset(); }}>Reset</button>
+        </div>
+      </div>
+      <div className="dc-progress-wrap">
+        <div className="dc-progress-label"><span>Progress</span><span>{done} / {total} complete</span></div>
+        <div className="dc-progress-bar"><div className="dc-progress-fill" style={{ width: `${done / total * 100}%` }}></div></div>
+      </div>
+      <div className="dc-list">
+        {DAILY_CHECKLIST.map(c => (
+          <div key={c.id} className={'dc-row ' + (checks[c.id] ? 'done' : '')} onClick={() => onToggle(c.id)}>
+            <div className="dc-chk">{checks[c.id] && I.check()}</div>
+            <div className="dc-body">
+              <div className="dc-text">{c.text}</div>
+              <div className="dc-meta">{c.meta}</div>
+            </div>
+            <span className={`cat-badge cat-${c.category.toLowerCase()}`}>{c.category}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════
    PAGE 1: Command Center
 ════════════════════════════════════════════ */
 const WARM_PIPELINE = [
@@ -1146,6 +1345,12 @@ function DashPage({ openModal }) {
 
   const [done, setDone] = useState({});
   const toggle = i => setDone(s => ({ ...s, [i]: !s[i] }));
+
+  const [clChecks, setClChecks] = useState({});
+  const clToggle = id => setClChecks(s => ({ ...s, [id]: !s[id] }));
+  const clReset  = () => setClChecks({});
+  const clDone = DAILY_CHECKLIST.filter(c => clChecks[c.id]).length;
+  const clRem  = DAILY_CHECKLIST.length - clDone;
 
   return (
     <>
@@ -1211,6 +1416,8 @@ function DashPage({ openModal }) {
         </div>
       </div>
 
+      <WelcomeStrip done={clDone} remaining={clRem}/>
+
       {/* Body */}
       <div className="body-grid">
         <div className="stack">
@@ -1239,6 +1446,8 @@ function DashPage({ openModal }) {
               })}
             </div>
           </div>
+
+          <DailyChecklist checks={clChecks} onToggle={clToggle} onReset={clReset}/>
 
           {/* Shoots */}
           <div className="panel">
@@ -1732,6 +1941,272 @@ function SkillsPage() {
 }
 
 /* ════════════════════════════════════════════
+   PAGE 7: Meta Ads
+════════════════════════════════════════════ */
+const META_STRATEGY = [
+  { title: 'Hook formula', body: 'Lead with the outcome: "What a $500 video looks like for a local business." First 3 seconds make or break the CPM.' },
+  { title: 'Audience targeting', body: 'Local business owners within 50 miles of Harrison AR. Layer in: restaurant, retail, hospitality, real estate. Start broad, let Meta find.' },
+  { title: 'Budget cadence', body: 'Start at $10/day per ad set. Kill anything above $25 CPL after 500 impressions. Scale winners to $30-50/day.' },
+  { title: 'Creative rotation', body: 'Rotate 3 creatives per ad set -- before/after, behind-the-scenes, testimonial. Refresh every 2 weeks to fight fatigue.' },
+];
+
+function MetaAdsPage() {
+  const [campaigns, setCampaigns] = React.useState([]);
+  const [form, setForm]           = React.useState({ name: '', spend: '', leads: '', cpl: '', notes: '' });
+  const [adding, setAdding]       = React.useState(false);
+
+  const addCampaign = () => {
+    if (!form.name.trim()) return;
+    setCampaigns(prev => [...prev, { ...form, id: Date.now() }]);
+    setForm({ name: '', spend: '', leads: '', cpl: '', notes: '' });
+    setAdding(false);
+  };
+
+  return (
+    <>
+      <div className="topbar">
+        <div>
+          <div className="crumb"><span>Marketing · Meta Ads</span></div>
+          <h1 className="page-title">Meta Ads</h1>
+          <div className="subtitle">Facebook and Instagram ad performance for Bray Films.</div>
+        </div>
+        <div className="top-right">
+          <Clock/>
+          <button className="icon-btn">{I.bell()}</button>
+        </div>
+      </div>
+
+      {/* Connect banner */}
+      <div className="meta-connect-banner">
+        <div>
+          <div className="meta-connect-title">Connect Meta Ads Manager</div>
+          <div className="meta-connect-sub">Link your ad account to pull live spend, CPL, and ROAS automatically.</div>
+        </div>
+        <button className="new-btn" onClick={() => alert('Meta Ads API integration -- set META_ACCESS_TOKEN in Vercel env vars and connect an ad account ID.')}>
+          {I.plus()} Connect Account
+        </button>
+      </div>
+
+      {/* Stat cards */}
+      <div className="stat-grid">
+        <div className="stat s-blue">
+          <div className="stat-row1">
+            <div><div className="stat-label">Total Spend -- May</div><div className="stat-value">--</div></div>
+            <div className="stat-badge">{I.dollar()}</div>
+          </div>
+          <div className="stat-delta d-blue">Connect account to track spend</div>
+          <Spark pts={[0,0,0,0,0,0,0,0,0]} color="#60a5fa"/>
+        </div>
+        <div className="stat s-green">
+          <div className="stat-row1">
+            <div><div className="stat-label">Leads Generated</div><div className="stat-value">--</div></div>
+            <div className="stat-badge">{I.flame()}</div>
+          </div>
+          <div className="stat-delta d-green">Connect account to track leads</div>
+          <Spark pts={[0,0,0,0,0,0,0,0,0]} color="#34d399"/>
+        </div>
+        <div className="stat s-gold">
+          <div className="stat-row1">
+            <div><div className="stat-label">Cost Per Lead</div><div className="stat-value">--</div></div>
+            <div className="stat-badge">{I.target()}</div>
+          </div>
+          <div className="stat-delta d-gold">Target: under $25 per lead</div>
+          <Spark pts={[0,0,0,0,0,0,0,0,0]} color="#c49a3c"/>
+        </div>
+        <div className="stat s-orange">
+          <div className="stat-row1">
+            <div><div className="stat-label">ROAS</div><div className="stat-value">--</div></div>
+            <div className="stat-badge">{I.trendUp()}</div>
+          </div>
+          <div className="stat-delta d-orange">Target: 3x return on ad spend</div>
+          <Spark pts={[0,0,0,0,0,0,0,0,0]} color="#f59e0b"/>
+        </div>
+      </div>
+
+      <div className="body-grid">
+        <div className="stack">
+          {/* Campaign log */}
+          <div className="panel">
+            <div className="panel-head">
+              <h3>Campaign Log</h3>
+              <button className="icon-btn" style={{ fontSize: 12, color: 'var(--gold)' }} onClick={() => setAdding(a => !a)}>
+                {I.plus({ width: 14, height: 14 })} Add
+              </button>
+            </div>
+
+            {adding && (
+              <div className="meta-form">
+                <input className="meta-input" placeholder="Campaign name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}/>
+                <div className="meta-row3">
+                  <input className="meta-input" placeholder="Spend ($)" value={form.spend} onChange={e => setForm(f => ({ ...f, spend: e.target.value }))}/>
+                  <input className="meta-input" placeholder="Leads" value={form.leads} onChange={e => setForm(f => ({ ...f, leads: e.target.value }))}/>
+                  <input className="meta-input" placeholder="CPL ($)" value={form.cpl} onChange={e => setForm(f => ({ ...f, cpl: e.target.value }))}/>
+                </div>
+                <input className="meta-input" placeholder="Notes" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}/>
+                <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                  <button className="new-btn" style={{ fontSize: 12, padding: '6px 14px' }} onClick={addCampaign}>Save</button>
+                  <button className="cancel-btn" onClick={() => setAdding(false)}>Cancel</button>
+                </div>
+              </div>
+            )}
+
+            {campaigns.length === 0 && !adding ? (
+              <div className="empty-state">No campaigns logged yet. Add your first campaign above.</div>
+            ) : (
+              <table className="meta-table">
+                <thead>
+                  <tr><th>Campaign</th><th>Spend</th><th>Leads</th><th>CPL</th><th>Notes</th></tr>
+                </thead>
+                <tbody>
+                  {campaigns.map(c => (
+                    <tr key={c.id}>
+                      <td>{c.name}</td>
+                      <td className="mono">{c.spend ? `$${c.spend}` : '--'}</td>
+                      <td className="mono">{c.leads || '--'}</td>
+                      <td className="mono">{c.cpl ? `$${c.cpl}` : '--'}</td>
+                      <td style={{ color: 'var(--ink-3)', fontSize: 12 }}>{c.notes || '--'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+
+        {/* Right col -- strategy cards */}
+        <div className="right-col">
+          <div className="panel">
+            <div className="panel-head"><h3>Strategy Reference</h3><span className="ph-meta">PLAYBOOK</span></div>
+            <div className="stack" style={{ gap: 10 }}>
+              {META_STRATEGY.map((s, i) => (
+                <div key={i} className="meta-strat-card">
+                  <div className="meta-strat-title">{s.title}</div>
+                  <div className="meta-strat-body">{s.body}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ════════════════════════════════════════════
+   PAGE 8: Publishing Schedule
+════════════════════════════════════════════ */
+const CONTENT_BANK = [
+  { id: 'p1', type: 'REEL',    title: 'Beelite Honey -- hive harvest BTS',       platform: 'Instagram', status: 'READY',   caption: 'Ever wonder how raw honey actually gets made? We spent the morning with the Beelite crew harvesting straight from the hive. #HarrisonAR #LocalBusiness #BehindTheScenes', hook: 'Raw honey, straight from the hive -- here is what it actually looks like.' },
+  { id: 'p2', type: 'STORY',   title: 'Studio setup timelapse',                   platform: 'Instagram', status: 'READY',   caption: 'Light setup in 60 seconds. Speed is a skill. #Filmmaking #VideoProduction', hook: 'Full studio setup in under 60 seconds.' },
+  { id: 'p3', type: 'REEL',    title: 'Before / after -- restaurant social edit', platform: 'Instagram', status: 'DRAFT',   caption: 'Same dish. Two very different videos. This is why production quality matters for restaurants. DM for pricing. #RestaurantMarketing', hook: 'Two videos. Same dish. One gets scrolled past. One gets bookmarked.' },
+  { id: 'p4', type: 'CAROUSEL', title: '5 signs your biz needs a video refresh',  platform: 'Facebook',  status: 'DRAFT',   caption: '5 signs your local business is leaving money on the table with bad video. Slide 5 hits different. #LocalMarketing #HarrisonAR', hook: '5 signs your video is costing you customers.' },
+  { id: 'p5', type: 'REEL',    title: 'Client testimonial -- Creekside Lodge',    platform: 'Instagram', status: 'FILMING', caption: 'When the client sends you a voice memo at 11pm saying they are getting direct booking calls from the video... that is the goal. #HospitalityMarketing', hook: 'Direct booking calls from a single video. Here is what we made.' },
+  { id: 'p6', type: 'POST',    title: 'Pricing transparency post',                platform: 'Facebook',  status: 'IDEA',    caption: 'What does a Bray Films video actually cost? Breaking it down so you can budget properly. #Transparent #VideoProduction #HarrisonAR', hook: 'What a Bray Films video costs -- no gatekeeping.' },
+];
+
+const PLATFORM_TARGETS = [
+  { platform: 'Instagram Reels', target: '3x / week', color: 'var(--orange)' },
+  { platform: 'Instagram Stories', target: 'Daily',   color: 'var(--gold)' },
+  { platform: 'Facebook Page', target: '2x / week',   color: 'var(--blue)' },
+  { platform: 'TikTok', target: '2x / week',          color: 'var(--green)' },
+];
+
+const STATUS_COLOR = { READY: 'var(--green)', DRAFT: 'var(--gold)', FILMING: 'var(--blue)', IDEA: 'var(--ink-3)' };
+
+function PostModal({ post, onClose }) {
+  const [copied, setCopied] = React.useState(false);
+  const copy = () => { navigator.clipboard.writeText(post.caption).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }); };
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal-box" style={{ maxWidth: 560 }} onClick={e => e.stopPropagation()}>
+        <div className="modal-head">
+          <div>
+            <div className="modal-eyebrow">{post.type} -- {post.platform}</div>
+            <div className="modal-title">{post.title}</div>
+          </div>
+          <button className="modal-x" onClick={onClose}>{I.x()}</button>
+        </div>
+        <div className="modal-body">
+          <div className="modal-section">
+            <div className="modal-section-label">Hook</div>
+            <div className="modal-section-val" style={{ fontStyle: 'italic', color: 'var(--gold)' }}>{post.hook}</div>
+          </div>
+          <div className="modal-section">
+            <div className="modal-section-label">Caption</div>
+            <div className="modal-section-val" style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{post.caption}</div>
+          </div>
+          <div className="modal-section">
+            <div className="modal-section-label">Status</div>
+            <div style={{ color: STATUS_COLOR[post.status] || 'var(--ink)' }}>{post.status}</div>
+          </div>
+        </div>
+        <div className="modal-foot">
+          <button className="cancel-btn" onClick={onClose}>Close</button>
+          <button className="copy-btn" onClick={copy}>{I.copy()} {copied ? 'Copied!' : 'Copy Caption'}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PublishingPage() {
+  const [activePost, setActivePost] = React.useState(null);
+  const [filter, setFilter]         = React.useState('ALL');
+
+  const shown = filter === 'ALL' ? CONTENT_BANK : CONTENT_BANK.filter(p => p.status === filter);
+
+  return (
+    <>
+      <div className="topbar">
+        <div>
+          <div className="crumb"><span>Marketing · Publishing</span></div>
+          <h1 className="page-title">Publishing Schedule</h1>
+          <div className="subtitle">Content bank, posting calendar, and platform targets.</div>
+        </div>
+        <div className="top-right">
+          <Clock/>
+          <button className="new-btn">{I.plus()} New Post</button>
+        </div>
+      </div>
+
+      {/* Platform targets */}
+      <div className="platform-row" style={{ gridTemplateColumns: 'repeat(4, 1fr)', marginBottom: 20 }}>
+        {PLATFORM_TARGETS.map((p, i) => (
+          <div key={i} className="platform-card">
+            <div className="platform-name" style={{ color: p.color }}>{p.platform}</div>
+            <div className="platform-target">{p.target}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Filter pills */}
+      <div className="filter-row" style={{ marginBottom: 16 }}>
+        {['ALL','READY','DRAFT','FILMING','IDEA'].map(s => (
+          <button key={s} className={'filter-pill ' + (filter === s ? 'active' : '')} onClick={() => setFilter(s)}>{s}</button>
+        ))}
+      </div>
+
+      {/* Content bank grid */}
+      <div className="content-grid">
+        {shown.map(post => (
+          <div key={post.id} className="content-card" onClick={() => setActivePost(post)}>
+            <div className="content-card-top">
+              <span className="content-type">{post.type}</span>
+              <span className="content-status" style={{ color: STATUS_COLOR[post.status] || 'var(--ink-3)' }}>{post.status}</span>
+            </div>
+            <div className="content-title">{post.title}</div>
+            <div className="content-platform">{post.platform}</div>
+            <div className="content-hook">{post.hook}</div>
+          </div>
+        ))}
+      </div>
+
+      {activePost && <PostModal post={activePost} onClose={() => setActivePost(null)}/>}
+    </>
+  );
+}
+
+/* ════════════════════════════════════════════
    Root App
 ════════════════════════════════════════════ */
 function App() {
@@ -1741,11 +2216,13 @@ function App() {
   const closeModal = ()   => setModal(null);
 
   const content = {
-    dash:    <DashPage    openModal={openModal}/>,
-    leads:   <LeadsPage   openModal={openModal}/>,
-    shoots:  <ShootsPage  openModal={openModal}/>,
-    revenue: <RevenuePage openModal={openModal}/>,
-    skills:  <SkillsPage/>,
+    dash:       <DashPage       openModal={openModal}/>,
+    leads:      <LeadsPage      openModal={openModal}/>,
+    meta:       <MetaAdsPage/>,
+    publishing: <PublishingPage/>,
+    shoots:     <ShootsPage     openModal={openModal}/>,
+    revenue:    <RevenuePage    openModal={openModal}/>,
+    skills:     <SkillsPage/>,
   }[page];
 
   return (
