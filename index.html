@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=1440" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Bray Films -- Studio OS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -547,6 +547,139 @@
   .filter-pill:hover { border-color: var(--line-2); color: var(--ink-2); }
   .filter-pill.active { background: rgba(196,154,60,.12); border-color: rgba(196,154,60,.35); color: var(--gold); }
   .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* modal-backdrop / modal-box -- PostModal aliases matching base modal styles */
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.70); display: grid; place-items: center; z-index: 100; backdrop-filter: blur(4px); }
+  .modal-box { background: var(--card-2); border: 1px solid var(--line-2); border-radius: 16px; width: 100%; max-height: 82vh; display: flex; flex-direction: column; box-shadow: 0 40px 80px rgba(0,0,0,.6); overflow: hidden; }
+
+  /* ══════════════════════════════════════════
+     BOTTOM TAB BAR (mobile only, hidden on desktop)
+  ══════════════════════════════════════════ */
+  .bottom-tab-bar {
+    display: none;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: var(--sidebar);
+    border-top: 1px solid var(--line);
+    z-index: 50;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .tab-btn {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    color: var(--ink-3); cursor: pointer; border: none; background: transparent; padding: 0;
+    min-height: 44px; transition: color .15s; -webkit-tap-highlight-color: transparent;
+  }
+  .tab-btn.active { color: var(--gold); }
+  .tab-btn:active { opacity: .7; }
+  .tab-label-sm { font-size: 9px; letter-spacing: .07em; font-weight: 600; text-transform: uppercase; }
+
+  /* ══════════════════════════════════════════
+     TABLET  769px – 1024px
+  ══════════════════════════════════════════ */
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .app { grid-template-columns: 200px 1fr; }
+    .sidebar { padding: 16px 10px 14px; }
+    main { padding: 20px 20px 36px; }
+    h1.page-title { font-size: 26px; }
+    .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .stat-value { font-size: 26px; }
+    .body-grid { grid-template-columns: minmax(0,1fr) 280px; gap: 16px; }
+    .lead-grid { grid-template-columns: 1fr; }
+    .skills-grid { grid-template-columns: repeat(2, 1fr); }
+    .shoots-pg-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* ══════════════════════════════════════════
+     MOBILE  ≤768px
+  ══════════════════════════════════════════ */
+  @media (max-width: 768px) {
+    /* App shell */
+    .app { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    main { padding: 16px 14px 90px; max-height: none; overflow-y: visible; }
+    .bottom-tab-bar { display: flex; }
+
+    /* Topbar: stack vertically */
+    .topbar { flex-direction: column; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
+    .top-right { width: 100%; justify-content: space-between; flex-shrink: unset; }
+    h1.page-title { font-size: 22px; }
+    .subtitle { font-size: 13px; }
+    .crumb { font-size: 10px; }
+
+    /* Stat grid: 2x2 */
+    .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+    .stat { padding: 14px; }
+    .stat-value { font-size: 22px; }
+    .stat-unit { font-size: 14px; }
+    .stat-badge { width: 32px; height: 32px; border-radius: 9px; }
+    .stat-delta { font-size: 11px; margin-top: 8px; }
+
+    /* Body grid: single column, right col moves below */
+    .body-grid { grid-template-columns: 1fr; gap: 14px; }
+
+    /* Pipeline: single column */
+    .lead-grid { grid-template-columns: 1fr; gap: 10px; }
+
+    /* Upcoming Shoots: horizontal scroll */
+    .shoots-row {
+      display: flex; overflow-x: auto; padding: 12px; gap: 12px;
+      -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; scrollbar-width: none;
+    }
+    .shoots-row::-webkit-scrollbar { display: none; }
+    .shoot-sm { min-width: 260px; flex-shrink: 0; scroll-snap-align: start; }
+
+    /* Leads table: hide Last Contact column */
+    .col-lc { display: none; }
+    table.ltbl { white-space: normal; }
+    .tbl-action { max-width: 140px; }
+    .tbl-wrap { padding: 0 10px 14px; }
+
+    /* Revenue table: hide Date column */
+    .col-rv-date { display: none; }
+
+    /* Modals: full screen */
+    .modal-overlay, .modal-backdrop { place-items: stretch; }
+    .modal, .modal-box {
+      width: 100% !important; max-width: 100% !important;
+      max-height: 100% !important; border-radius: 0 !important;
+    }
+
+    /* Skills grid: 2 columns */
+    .skills-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .skill-card { padding: 16px; }
+    .sk-title { font-size: 13px; }
+
+    /* Shoots page: single column */
+    .shoots-pg-grid { grid-template-columns: 1fr; }
+
+    /* Meta Ads connect banner: stack */
+    .meta-connect-banner { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .meta-row3 { grid-template-columns: 1fr; }
+
+    /* Publishing: platform row 2x2, content grid 1 col */
+    .content-grid { grid-template-columns: 1fr; }
+
+    /* Touch targets: minimum 44px */
+    .dc-row { min-height: 44px; }
+    .warm-row { min-height: 44px; padding: 10px 12px; }
+    .cl-item { min-height: 44px; }
+    .pri { min-height: 44px; }
+    .pill, .filter-pill { min-height: 36px; padding: 8px 12px; }
+    .nav-item, .tab-btn { min-height: 44px; }
+
+    /* Filter pills: wrap */
+    .filter-row { gap: 6px; }
+
+    /* Welcome strip: tighter */
+    .welcome-strip { margin-bottom: 12px; padding: 10px 14px; }
+    .welcome-serif { font-size: 13px; }
+
+    /* Rev bar: smaller font */
+    .rev-big { font-size: 22px; }
+
+    /* Warm list: full width */
+    .warm-name { font-size: 12px; }
+  }
 </style>
 </head>
 <body>
@@ -1586,7 +1719,7 @@ function LeadsPage({ openModal }) {
                 <th>Stage</th>
                 <th>Value</th>
                 <th>Next Action</th>
-                <th>Last Contact</th>
+                <th className="col-lc">Last Contact</th>
               </tr>
             </thead>
             <tbody>
@@ -1603,7 +1736,7 @@ function LeadsPage({ openModal }) {
                   </td>
                   <td><span className="tbl-val">{l.value || fmtMoney(l.numValue)}</span></td>
                   <td><span className="tbl-action">{l.action}</span></td>
-                  <td><span className="tbl-days">{l.lastContact}d ago</span></td>
+                  <td className="col-lc"><span className="tbl-days">{l.lastContact}d ago</span></td>
                 </tr>
               ))}
             </tbody>
@@ -1740,7 +1873,7 @@ function RevenuePage({ openModal }) {
             <div className="rev-month-lbl">{month}</div>
             <table className="rtbl">
               <thead>
-                <tr><th>Client / Project</th><th>Amount</th><th>Status</th><th>Date</th></tr>
+                <tr><th>Client / Project</th><th>Amount</th><th>Status</th><th className="col-rv-date">Date</th></tr>
               </thead>
               <tbody>
                 {rows.map((r, i) => (
@@ -1752,7 +1885,7 @@ function RevenuePage({ openModal }) {
                         ? <span className="badge-ok">Collected</span>
                         : <span className="badge-pending">Contracted</span>}
                     </td>
-                    <td style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'var(--ink-3)' }}>{r.date}</td>
+                    <td className="col-rv-date" style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'var(--ink-3)' }}>{r.date}</td>
                   </tr>
                 ))}
               </tbody>
@@ -2207,6 +2340,29 @@ function PublishingPage() {
 }
 
 /* ════════════════════════════════════════════
+   Bottom Tab Bar (mobile only)
+════════════════════════════════════════════ */
+const TAB_BAR = [
+  { id: 'dash',    label: 'Home',    icon: 'grid'   },
+  { id: 'leads',   label: 'Leads',   icon: 'flame'  },
+  { id: 'shoots',  label: 'Shoots',  icon: 'cam'    },
+  { id: 'revenue', label: 'Revenue', icon: 'dollar' },
+  { id: 'skills',  label: 'Skills',  icon: 'award'  },
+];
+function BottomTabBar({ active, go }) {
+  return (
+    <nav className="bottom-tab-bar">
+      {TAB_BAR.map(t => (
+        <button key={t.id} className={'tab-btn ' + (active === t.id ? 'active' : '')} onClick={() => go(t.id)}>
+          {I[t.icon]({ width: 20, height: 20 })}
+          <span className="tab-label-sm">{t.label}</span>
+        </button>
+      ))}
+    </nav>
+  );
+}
+
+/* ════════════════════════════════════════════
    Root App
 ════════════════════════════════════════════ */
 function App() {
@@ -2230,6 +2386,7 @@ function App() {
       <Sidebar active={page} go={setPage}/>
       <main>{content}</main>
       <ModalManager modal={modal} onClose={closeModal}/>
+      <BottomTabBar active={page} go={setPage}/>
     </div>
   );
 }
