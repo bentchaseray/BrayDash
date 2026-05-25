@@ -1,1310 +1,1763 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#050506">
-<title>My Dashboard</title>
-<script src="topbar.js" defer></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1440" />
+<title>Bray Films -- Studio OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
 <style>
-:root {
-  --text-primary: #FAFAFA;
-  --text-secondary: #B8B6B0;
-  --text-tertiary: #76746E;
-  --success: #6BE3A4;
-  --warning: #F2C063;
-  --danger: #FF6B6B;
-  --font: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-}
+  :root {
+    --bg: #0e0e10;
+    --bg-2: #141416;
+    --sidebar: #08080a;
+    --card: #18181b;
+    --card-2: #1f1f23;
+    --line: rgba(255,255,255,.06);
+    --line-2: rgba(255,255,255,.10);
+    --ink: #ececee;
+    --ink-2: #a8a8ad;
+    --ink-3: #6b6b73;
+    --gold: #c49a3c;
+    --gold-2: #e3b85a;
+    --gold-soft: rgba(196,154,60,.14);
+    --green: #34d399;
+    --blue: #60a5fa;
+    --orange: #f59e0b;
+    --red: #ef4444;
+    --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 12px 30px rgba(0,0,0,.35), 0 2px 8px rgba(0,0,0,.25);
+    --logo-a: #25252a;
+    --logo-b: #131316;
+    --pill-a: #1c1c20;
+    --pill-b: #131316;
+    --ambient-1: rgba(196,154,60,.06);
+    --ambient-2: rgba(255,255,255,.025);
+    --pad: 26px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  body {
+    background:
+      radial-gradient(1200px 600px at 80% -10%, var(--ambient-1), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, var(--ambient-2), transparent 60%),
+      var(--bg);
+    min-height: 100vh;
+  }
 
-* { box-sizing: border-box; }
-html, body {
-  margin: 0; padding: 0;
-  background: #050506;
-  color: var(--text-secondary);
-  font-family: var(--font);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
-}
-body {
-  min-height: 100vh;
-  position: relative;
-  overflow-x: hidden;
-  padding: max(28px, env(safe-area-inset-top)) 20px 60px;
-}
-body::before {
-  content: '';
-  position: fixed; inset: 0;
-  background:
-    radial-gradient(circle at 82% 14%, rgba(224, 118, 88, 0.16), transparent 45%),
-    radial-gradient(circle at 18% 90%, rgba(180, 180, 200, 0.06), transparent 50%);
-  filter: blur(40px);
-  pointer-events: none;
-  z-index: -2;
-  animation: drift 36s ease-in-out infinite alternate;
-}
-body::after {
-  content: '';
-  position: fixed; inset: 0;
-  background-image: radial-gradient(rgba(255,255,255,0.014) 1px, transparent 1px);
-  background-size: 3px 3px;
-  pointer-events: none;
-  z-index: -1;
-}
-@keyframes drift {
-  0%   { transform: translate3d(0,0,0); }
-  100% { transform: translate3d(-22px, 14px, 0); }
-}
+  /* -- Layout -- */
+  .app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+  .sidebar {
+    background: var(--sidebar);
+    border-right: 1px solid var(--line);
+    padding: 22px 16px 16px;
+    display: flex; flex-direction: column; gap: 22px;
+    position: sticky; top: 0; height: 100vh; overflow: hidden;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; padding: 4px 8px 16px; border-bottom: 1px solid var(--line); }
+  .logo-mark {
+    width: 36px; height: 36px; border-radius: 9px;
+    background: linear-gradient(160deg, var(--logo-a), var(--logo-b));
+    border: 1px solid var(--line-2);
+    display: grid; place-items: center;
+    box-shadow: 0 0 0 1px rgba(196,154,60,.18) inset, 0 8px 20px rgba(196,154,60,.10);
+  }
+  .logo-mark svg { color: var(--gold); }
+  .logo-text { display: flex; flex-direction: column; line-height: 1.1; }
+  .logo-text b { font-size: 13px; letter-spacing: .14em; }
+  .logo-text small { font-size: 10px; color: var(--ink-3); letter-spacing: .22em; text-transform: uppercase; }
 
-.page {
-  max-width: 1100px;
-  margin: 0 auto;
-}
+  .nav-section { display: flex; flex-direction: column; gap: 2px; }
+  .nav-label { font-size: 10px; letter-spacing: .22em; color: var(--ink-3); padding: 8px 10px; text-transform: uppercase; }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px; border-radius: 8px;
+    color: var(--ink-2); font-size: 13.5px; font-weight: 500;
+    cursor: pointer; user-select: none; position: relative;
+    transition: all .15s ease;
+  }
+  .nav-item:hover { background: rgba(255,255,255,.03); color: var(--ink); }
+  .nav-item.active {
+    background: linear-gradient(180deg, rgba(196,154,60,.14), rgba(196,154,60,.06));
+    color: #fff;
+    box-shadow: inset 0 0 0 1px rgba(196,154,60,.25);
+  }
+  .nav-item.active::before {
+    content: ""; position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px;
+    background: var(--gold); border-radius: 0 3px 3px 0;
+  }
+  .nav-item.active .nav-ic { color: var(--gold); }
+  .nav-ic { width: 18px; height: 18px; color: var(--ink-3); display: grid; place-items: center; }
 
-/* ===== Component 1: page title ===== */
-.dash-title {
-  margin: 0 0 14px;
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  background: linear-gradient(180deg, #FFFFFF 0%, #C7C4BC 120%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-}
-@media (max-width: 480px) { .dash-title { font-size: 22px; } }
+  .sidebar-foot { margin-top: auto; }
+  .profile-pill {
+    display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px;
+    background: linear-gradient(180deg, var(--pill-a), var(--pill-b));
+    border: 1px solid var(--line-2);
+  }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, #c49a3c 0%, #6d4f1c 100%);
+    color: #0b1220; font-weight: 700; font-size: 13px;
+    display: grid; place-items: center;
+    box-shadow: 0 0 0 2px rgba(196,154,60,.15);
+  }
+  .who { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+  .who b { font-size: 13px; color: var(--ink); }
+  .who small { font-size: 11px; color: var(--ink-3); }
+  .online-dot { margin-left: auto; width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
 
-/* ===== Component 2: Goal Ticker ===== */
-.ticker-row {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 4px;
-  margin-bottom: 18px;
-}
-.goal-ticker {
-  position: relative; overflow: hidden;
-  display: flex; align-items: center; gap: 10px;
-  padding: 7px 12px;
-  border-radius: 12px;
-  background:
-    linear-gradient(180deg, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.30) 100%),
-    repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 3px);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
-}
-.goal-ticker::after {
-  content: '';
-  position: absolute; top: 0; bottom: 0;
-  width: 30%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
-  pointer-events: none;
-  animation: ticker-sweep 8s linear infinite;
-}
-@keyframes ticker-sweep {
-  0%   { left: -40%; }
-  100% { left: 110%; }
-}
-.goal-ticker-led { display: inline-flex; align-items: center; }
-.goal-ticker-led-dot {
-  width: 7px; height: 7px; border-radius: 50%;
-  background: #6BE3A4;
-  box-shadow: 0 0 8px rgba(107,227,164,0.7);
-  animation: led-pulse 1.6s ease-in-out infinite;
-}
-@keyframes led-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%      { opacity: 0.45; transform: scale(0.85); }
-}
-.goal-ticker-label {
-  font-family: var(--font-mono);
-  font-size: 9.5px; font-weight: 800;
-  letter-spacing: 0.18em;
-  color: var(--text-tertiary);
-}
-.goal-ticker-stage {
-  position: relative; overflow: hidden;
-  flex: 1; height: 22px;
-}
-.goal-ticker-row {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; gap: 8px;
-  font-family: var(--font-mono);
-  font-size: 12.5px; font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-primary);
-  white-space: nowrap;
-}
-.goal-ticker-row.is-leaving  { animation: ticker-leave 0.45s cubic-bezier(0.55, 0, 0.55, 1) forwards; }
-.goal-ticker-row.is-entering { animation: ticker-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-@keyframes ticker-leave { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-100%); } }
-@keyframes ticker-enter { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: translateY(0); } }
-.goal-ticker-status {
-  display: inline-flex; justify-content: center;
-  width: 18px;
-  color: var(--text-tertiary);
-}
-.goal-ticker-status[data-status="done"]    { color: var(--success); }
-.goal-ticker-status[data-status="pending"] { color: var(--text-tertiary); }
-.goal-ticker-text {
-  flex: 1;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.goal-ticker-meta {
-  font-family: var(--font-mono);
-  font-size: 11px; font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.04em;
-  color: var(--text-secondary);
-  padding: 3px 8px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.04);
-}
-@media (max-width: 480px) {
-  .goal-ticker { padding: 9px 12px; }
-  .goal-ticker-label { font-size: 9px; letter-spacing: 0.14em; }
-  .goal-ticker-row { font-size: 12px; }
-  .goal-ticker-meta { font-size: 10px; padding: 2px 7px; }
-}
+  /* -- Main -- */
+  main { padding: var(--pad) calc(var(--pad) + 6px) 48px; min-width: 0; overflow-y: auto; max-height: 100vh; }
+  .topbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
+  .crumb { font-size: 11px; letter-spacing: .22em; color: var(--ink-3); text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .live-badge { display: inline-flex; align-items: center; gap: 6px; color: var(--green); }
+  .pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(52,211,153,.6)} 50%{box-shadow:0 0 0 6px rgba(52,211,153,0)} }
+  h1.page-title { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
+  .subtitle { color: var(--ink-2); font-size: 14px; margin-top: 6px; }
+  .subtitle em { color: var(--gold); font-style: normal; font-weight: 600; }
+  .top-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .clock-widget {
+    background: var(--card); border: 1px solid var(--line);
+    padding: 10px 14px; border-radius: 10px;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: var(--shadow);
+  }
+  .clock-t { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 600; letter-spacing: .03em; }
+  .clock-d { font-size: 11px; color: var(--ink-3); letter-spacing: .12em; text-transform: uppercase; }
+  .icon-btn {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: var(--card); border: 1px solid var(--line);
+    display: grid; place-items: center; color: var(--ink-2);
+    cursor: pointer; position: relative; box-shadow: var(--shadow);
+  }
+  .icon-btn:hover { color: var(--ink); border-color: var(--line-2); }
+  .notif-dot { position: absolute; top: 9px; right: 9px; width: 7px; height: 7px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 2px var(--card); }
+  .new-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(180deg, var(--gold-2), var(--gold));
+    color: #1a1305; font-weight: 600; font-size: 13px;
+    padding: 10px 14px; border-radius: 10px; border: 0; cursor: pointer;
+    box-shadow: 0 6px 14px rgba(196,154,60,.30), inset 0 1px 0 rgba(255,255,255,.25);
+  }
 
-/* ===== Component 3: Day Ring ===== */
-.day-ring-wrap {
-  display: flex; flex-wrap: wrap;
-  align-items: center; justify-content: center;
-  gap: 26px;
-  padding: 22px;
-  margin-bottom: 22px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(24px) saturate(1.2);
-  -webkit-backdrop-filter: blur(24px) saturate(1.2);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
-}
-.day-ring {
-  position: relative;
-  width: 168px; height: 168px;
-  flex-shrink: 0;
-}
-.day-ring svg { width: 100%; height: 100%; display: block; }
-.day-ring-track { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 8; }
-.day-ring-fill {
-  fill: none;
-  stroke-width: 8;
-  stroke-linecap: round;
-  transform: rotate(-90deg);
-  transform-origin: 60px 60px;
-  transition: stroke 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-              stroke-dashoffset 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.day-ring-overlay {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  pointer-events: none;
-}
-.day-ring-percent {
-  font-size: 40px; font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.04em;
-  color: var(--text-primary);
-  line-height: 1;
-}
-.day-ring-phase {
-  margin-top: 5px;
-  font-family: var(--font-mono);
-  font-size: 9.5px; font-weight: 800;
-  letter-spacing: 0.16em; text-transform: uppercase;
-  color: var(--text-tertiary);
-}
-.day-ring-clock {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  color: var(--text-tertiary);
-  margin-top: 2px;
-}
-.day-ring-text {
-  display: flex; flex-direction: column;
-  gap: 6px;
-  max-width: 280px;
-}
-.day-ring-status { font-size: 14px; font-weight: 700; color: var(--text-primary); }
-.day-ring-remaining { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); }
-.day-ring-hours { font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); }
-@media (max-width: 480px) {
-  .day-ring { width: 144px; height: 144px; }
-  .day-ring-percent { font-size: 32px; }
-  .day-ring-status { font-size: 13px; }
-}
+  /* -- Stat cards -- */
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 24px; }
+  .stat {
+    background: linear-gradient(180deg, var(--card), var(--bg-2));
+    border: 1px solid var(--line); border-radius: 14px; padding: 18px;
+    box-shadow: var(--shadow); position: relative; overflow: hidden;
+    transition: transform .15s ease, border-color .15s ease;
+    cursor: pointer;
+  }
+  .stat:hover { transform: translateY(-2px); border-color: var(--line-2); }
+  .stat-row1 { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .stat-label { font-size: 12px; color: var(--ink-2); letter-spacing: .04em; }
+  .stat-value { font-size: 32px; font-weight: 700; letter-spacing: -.02em; margin-top: 10px; line-height: 1; font-family: 'JetBrains Mono', monospace; }
+  .stat-unit { font-size: 18px; color: var(--ink-2); font-weight: 500; margin-left: 4px; }
+  .stat-delta { margin-top: 12px; font-size: 12px; color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
+  .stat-delta b { font-weight: 600; }
+  .stat-badge {
+    width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; flex-shrink: 0;
+    background: var(--sb-soft, rgba(255,255,255,.05)); color: var(--sb-c, var(--ink));
+    box-shadow: inset 0 0 0 1px var(--sb-line, var(--line-2));
+  }
+  .stat.s-green { --sb-c: var(--green); --sb-soft: rgba(52,211,153,.12); --sb-line: rgba(52,211,153,.25); }
+  .stat.s-blue  { --sb-c: var(--blue);  --sb-soft: rgba(96,165,250,.12); --sb-line: rgba(96,165,250,.25); }
+  .stat.s-gold  { --sb-c: var(--gold);  --sb-soft: rgba(196,154,60,.16); --sb-line: rgba(196,154,60,.30); }
+  .stat.s-orange{ --sb-c: var(--orange);--sb-soft: rgba(245,158,11,.12); --sb-line: rgba(245,158,11,.25); }
+  .stat-delta.d-green b { color: var(--green); }
+  .stat-delta.d-blue  b { color: var(--blue); }
+  .stat-delta.d-gold  b { color: var(--gold); }
+  .stat-delta.d-orange b { color: var(--orange); }
+  .spark-wrap { position: absolute; right: 0; bottom: 0; opacity: .35; pointer-events: none; }
 
-/* ===== Component 4: section + To Do List ===== */
-.section { margin-top: 8px; }
-.section-title {
-  font-size: 10.5px; font-weight: 700;
-  letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--text-tertiary);
-  display: flex; align-items: center; gap: 12px;
-  margin-bottom: 12px;
-}
-.section-title::before {
-  content: ''; width: 18px; height: 1px;
-  background: var(--text-tertiary); opacity: 0.6;
-}
-.section-title::after {
-  content: ''; flex: 1; height: 1px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.08), transparent);
-}
+  /* -- Two-column body -- */
+  .body-grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 22px; }
+  .stack { display: flex; flex-direction: column; gap: 22px; }
+  .right-col { display: flex; flex-direction: column; gap: 22px; }
 
-.gm-card {
-  position: relative;
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 14px;
-  backdrop-filter: blur(24px) saturate(1.2);
-  -webkit-backdrop-filter: blur(24px) saturate(1.2);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
-  transition: background 0.4s;
-  overflow: hidden;
-}
-.gm-card.gm-all-done::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: radial-gradient(circle at 50% 0%, rgba(107,227,164,0.10), transparent 60%);
-  pointer-events: none;
-}
-.gm-card.gm-all-done .gm-progress-num,
-.gm-card.gm-all-done .gm-progress-label { color: var(--success); }
+  /* -- Panel -- */
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+  .panel-head h3 { margin: 0; font-size: 14px; font-weight: 600; letter-spacing: -.005em; }
+  .ph-meta { font-size: 11px; color: var(--ink-3); letter-spacing: .12em; text-transform: uppercase; }
+  .ph-link { font-size: 12px; color: var(--ink-2); cursor: pointer; }
+  .ph-link:hover { color: var(--gold); }
+  .ph-right { display: flex; gap: 8px; align-items: center; }
 
-.gm-header {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  flex-wrap: wrap; gap: 12px;
-  margin-bottom: 14px;
-  position: relative;
-}
-.gm-header-left { display: flex; flex-direction: column; }
-.gm-eyebrow {
-  font-size: 10.5px; font-weight: 700;
-  letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--text-tertiary);
-  margin-bottom: 6px;
-}
-.gm-progress-row { display: flex; align-items: baseline; gap: 6px; }
-.gm-progress-num {
-  font-size: 42px; font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.045em;
-  color: var(--text-primary);
-  line-height: 1;
-}
-.gm-progress-total {
-  font-family: var(--font-mono);
-  font-size: 18px;
-  color: var(--text-tertiary);
-}
-.gm-progress-label {
-  font-size: 11px; font-weight: 600;
-  letter-spacing: 0.10em; text-transform: uppercase;
-  color: var(--text-tertiary);
-  margin-left: 4px;
-}
-.gm-tomorrow-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 4px; }
-.gm-tomorrow-count {
-  font-family: var(--font-mono);
-  font-size: 11px; font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.04em; text-transform: uppercase;
-  color: var(--text-tertiary);
-}
-.gm-card-tomorrow .gm-progress-row { display: none; }
+  /* -- Pipeline grid -- */
+  .lead-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px; }
+  .lead-card {
+    background: linear-gradient(180deg, var(--card-2), var(--card));
+    border: 1px solid var(--line); border-radius: 12px; padding: 16px;
+    display: flex; flex-direction: column; gap: 10px;
+    cursor: pointer; transition: all .18s ease; position: relative; overflow: hidden;
+  }
+  .lead-card:hover { border-color: rgba(196,154,60,.35); transform: translateY(-1px); }
+  .lead-card::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(400px 120px at 100% 0%, rgba(196,154,60,.06), transparent 60%);
+  }
+  .lead-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .lead-name { font-size: 15px; font-weight: 600; }
+  .lead-sub { font-size: 12px; color: var(--ink-3); margin-top: 1px; }
+  .lead-actions-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: 4px; }
+  .lead-action-lbl { display: block; font-size: 11px; color: var(--ink-3); letter-spacing: .14em; font-weight: 500; margin-bottom: 3px; }
+  .lead-action-text { font-size: 12.5px; color: var(--ink-2); }
+  .lead-value { font-size: 20px; font-weight: 700; color: var(--gold); font-family: 'JetBrains Mono', monospace; letter-spacing: -.01em; white-space: nowrap; }
+  .lead-meta { display: flex; gap: 14px; font-size: 11px; color: var(--ink-3); }
+  .lead-meta span { display: inline-flex; align-items: center; gap: 5px; }
+  .lead-meta b { color: var(--ink-2); font-weight: 500; }
 
-.gm-streak {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.06);
-  color: var(--text-tertiary);
-  font-size: 11px; font-weight: 600;
-  letter-spacing: 0.10em; text-transform: uppercase;
-  transition: background 0.25s, color 0.25s, border-color 0.25s;
-}
-.gm-streak-icon { font-size: 13px; }
-.gm-streak-num {
-  font-family: var(--font-mono);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-.gm-streak.gm-streak-active {
-  background: rgba(242,192,99,0.10);
-  color: #F2C063;
-  border-color: rgba(242,192,99,0.32);
-}
-.gm-streak.gm-streak-active .gm-streak-icon {
-  filter: drop-shadow(0 0 6px rgba(242,192,99,0.6));
-}
+  /* Badges */
+  .badge-hot {
+    display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+    font-size: 10px; letter-spacing: .15em; font-weight: 700;
+    color: #ffd1d1; background: rgba(239,68,68,.14); border: 1px solid rgba(239,68,68,.30);
+    padding: 4px 8px; border-radius: 999px;
+  }
+  .ember { width: 5px; height: 5px; background: #ff5b5b; border-radius: 50%; box-shadow: 0 0 8px #ff5b5b; }
+  .badge-warm {
+    display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+    font-size: 10px; letter-spacing: .15em; font-weight: 700;
+    color: #bfdbfe; background: rgba(96,165,250,.12); border: 1px solid rgba(96,165,250,.25);
+    padding: 4px 8px; border-radius: 999px;
+  }
+  .badge-ok {
+    display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+    font-size: 10px; letter-spacing: .12em; font-weight: 700;
+    color: #a7f3d0; background: rgba(52,211,153,.12); border: 1px solid rgba(52,211,153,.25);
+    padding: 3px 8px; border-radius: 999px;
+  }
+  .badge-pending {
+    display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+    font-size: 10px; letter-spacing: .12em; font-weight: 700;
+    color: #fde68a; background: rgba(245,158,11,.12); border: 1px solid rgba(245,158,11,.25);
+    padding: 3px 8px; border-radius: 999px;
+  }
+  .badge-past {
+    display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+    font-size: 10px; letter-spacing: .12em; font-weight: 700;
+    color: var(--ink-3); background: rgba(255,255,255,.05); border: 1px solid var(--line);
+    padding: 3px 8px; border-radius: 999px;
+  }
 
-.gm-bar {
-  display: flex; gap: 4px;
-  height: 6px;
-  margin-bottom: 16px;
-}
-.gm-bar:empty { display: none; }
-.gm-bar-seg {
-  flex: 1;
-  background: rgba(255,255,255,0.06);
-  border-radius: 3px;
-  transition: background 0.3s, box-shadow 0.3s;
-}
-.gm-bar-seg-done {
-  background: #6BE3A4;
-  box-shadow: 0 0 6px rgba(107,227,164,0.40);
-}
+  /* -- Shoot cards (command center 3-col) -- */
+  .shoots-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 16px; }
+  .shoot-sm {
+    background: linear-gradient(180deg, var(--card-2), var(--card));
+    border: 1px solid var(--line); border-radius: 12px; padding: 16px;
+    position: relative; overflow: hidden; cursor: pointer; transition: all .18s ease;
+  }
+  .shoot-sm:hover { transform: translateY(-1px); border-color: var(--line-2); }
+  .shoot-cd { font-family: 'JetBrains Mono', monospace; font-size: 44px; font-weight: 700; line-height: 1; color: var(--gold); letter-spacing: -.04em; }
+  .shoot-cd-lbl { font-size: 11px; color: var(--ink-3); letter-spacing: .22em; display: block; margin-top: 6px; font-weight: 500; }
+  .shoot-title { font-size: 14px; font-weight: 600; margin-top: 14px; }
+  .shoot-where { font-size: 12px; color: var(--ink-2); margin-top: 2px; }
+  .shoot-foot { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--line-2); display: flex; align-items: center; justify-content: space-between; font-size: 11.5px; color: var(--ink-3); }
+  .shoot-net { color: var(--ink); font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+  .shoot-ribbon { position: absolute; top: 14px; right: 14px; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
 
-.goal-list { list-style: none; margin: 0; padding: 0; }
-.empty-state {
-  text-align: center;
-  font-size: 12px; font-style: italic;
-  color: var(--text-tertiary);
-  padding: 14px 0;
-}
+  /* -- Priorities -- */
+  .priorities-list { padding: 8px; }
+  .pri {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px; border-radius: 10px; transition: background .15s ease;
+  }
+  .pri:hover { background: rgba(255,255,255,.025); }
+  .pri-num { width: 22px; height: 22px; border-radius: 6px; background: rgba(196,154,60,.12); color: var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; display: grid; place-items: center; flex-shrink: 0; margin-top: 1px; }
+  .chk { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--ink-3); cursor: pointer; flex-shrink: 0; margin-top: 2px; display: grid; place-items: center; transition: all .15s ease; }
+  .chk.on { background: var(--gold); border-color: var(--gold); color: #1a1305; }
+  .chk.on svg { display: block; }
+  .chk svg { display: none; }
+  .pri-body { flex: 1; min-width: 0; }
+  .pri-text { font-size: 13.5px; color: var(--ink); font-weight: 500; line-height: 1.35; }
+  .pri.done .pri-text { color: var(--ink-3); text-decoration: line-through; }
 
-.gm-row {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 14px;
-  margin-bottom: 6px;
-  background: rgba(255,255,255,0.035);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 12px;
-  transition: background 0.2s, opacity 0.3s;
-  position: relative;
-}
-.gm-row:hover { background: rgba(255,255,255,0.06); }
-.gm-row.gm-row-done {
-  opacity: 0.45;
-  background: rgba(107,227,164,0.04);
-}
-.gm-row.gm-row-done .gm-text {
-  text-decoration: line-through;
-  text-decoration-color: rgba(255,255,255,0.4);
-}
-.gm-row.gm-row-queued {
-  background: rgba(242,192,99,0.10);
-  box-shadow: inset 3px 0 0 0 #F2C063;
-}
-.gm-row.gm-row-queued .gm-text { color: #FFE2A8; }
-.gm-row.is-drag-over { border-top: 2px solid #6BE3A4; }
-.gm-row.is-queue-flashing { animation: gm-queue-flash 0.48s ease-out; }
-@keyframes gm-queue-flash {
-  0%   { background: rgba(255,255,255,0.035); transform: scale(1); }
-  40%  { background: rgba(242,192,99,0.32); transform: scale(1.015); }
-  100% { background: rgba(255,255,255,0.035); transform: scale(1); }
-}
+  /* -- Revenue bar -- */
+  .rev-wrap { padding: 16px 18px 18px; }
+  .rev-top-row { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 14px; }
+  .rev-big { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; letter-spacing: -.02em; }
+  .rev-of { color: var(--ink-3); font-size: 16px; font-weight: 500; }
+  .rev-pct-badge { font-size: 12px; color: var(--gold); font-weight: 600; padding: 4px 8px; border-radius: 6px; background: var(--gold-soft); border: 1px solid rgba(196,154,60,.20); }
+  .rev-bar { height: 10px; border-radius: 6px; overflow: hidden; background: rgba(255,255,255,.04); display: flex; box-shadow: inset 0 0 0 1px var(--line); }
+  .seg-c { background: linear-gradient(90deg, #10b981, #34d399); }
+  .seg-k { background: linear-gradient(90deg, #b8842f, #e3b85a); }
+  .rev-legend { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+  .rev-leg { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  .leg-swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .leg-label { color: var(--ink-2); flex: 1; }
+  .leg-amt { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+  .leg-c .leg-swatch { background: var(--green); }
+  .leg-k .leg-swatch { background: var(--gold); }
+  .leg-r .leg-swatch { background: rgba(255,255,255,.10); border: 1px solid var(--line-2); }
+  .leg-r .leg-amt { color: var(--ink-2); }
 
-.gm-handle {
-  width: 14px; flex-shrink: 0;
-  color: var(--text-tertiary);
-  font-weight: 700; font-size: 14px;
-  letter-spacing: -2px;
-  cursor: grab;
-  opacity: 0;
-  transition: opacity 0.2s;
-  user-select: none;
-}
-.gm-row:hover .gm-handle { opacity: 1; }
-.gm-handle:active { cursor: grabbing; }
+  /* -- Warm list -- */
+  .warm-list { padding: 6px 6px 8px; }
+  .warm-row { display: grid; grid-template-columns: 28px 1fr auto auto; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; cursor: pointer; transition: background .15s ease; }
+  .warm-row:hover { background: rgba(255,255,255,.03); }
+  .warm-init { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(160deg, var(--logo-a), var(--logo-b)); border: 1px solid var(--line-2); display: grid; place-items: center; font-size: 11px; font-weight: 700; color: var(--ink-2); font-family: 'JetBrains Mono', monospace; }
+  .warm-name { font-size: 13px; color: var(--ink); font-weight: 500; line-height: 1.25; }
+  .warm-name small { display: block; font-size: 11px; color: var(--ink-3); font-weight: 400; margin-top: 1px; }
+  .warm-bar { width: 28px; height: 4px; border-radius: 2px; background: linear-gradient(90deg, rgba(96,165,250,.5), rgba(196,154,60,.5)); }
 
-.gm-check {
-  appearance: none; -webkit-appearance: none;
-  width: 22px; height: 22px; flex-shrink: 0;
-  margin: 0;
-  border: 1.5px solid rgba(255,255,255,0.18);
-  background: rgba(0,0,0,0.28);
-  border-radius: 7px;
-  position: relative;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s, box-shadow 0.25s;
-}
-.gm-check:checked {
-  background: #6BE3A4;
-  border-color: #6BE3A4;
-  box-shadow: 0 0 12px rgba(107,227,164,0.40);
-}
-.gm-check:checked::after {
-  content: '';
-  position: absolute; left: 6px; top: 2px;
-  width: 6px; height: 11px;
-  border: solid #0A0A0B;
-  border-width: 0 2.5px 2.5px 0;
-  transform: rotate(45deg);
-  animation: gm-check-pop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-@keyframes gm-check-pop {
-  from { transform: rotate(45deg) scale(0); }
-  to   { transform: rotate(45deg) scale(1); }
-}
-.gm-check:disabled { cursor: not-allowed; opacity: 0.55; }
+  /* -- Filters / pills -- */
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+  .section-head h2 { margin: 0; font-size: 13px; font-weight: 600; letter-spacing: -.005em; }
+  .filter-row { display: flex; gap: 6px; }
+  .pill { font-size: 11px; padding: 5px 10px; border-radius: 999px; color: var(--ink-2); cursor: pointer; border: 1px solid var(--line); background: transparent; transition: all .15s; }
+  .pill.on { background: var(--gold-soft); color: var(--gold); border-color: rgba(196,154,60,.30); }
+  .pill:hover:not(.on) { color: var(--ink); border-color: var(--line-2); }
 
-.gm-text {
-  flex: 1;
-  font-size: 14px;
-  color: var(--text-primary);
-  cursor: text;
-  outline: none;
-  border-radius: 4px;
-  padding: 2px 4px;
-  margin: -2px -4px;
-}
-.gm-text[contenteditable="true"] {
-  outline: 1px solid rgba(255,255,255,0.18);
-  background: rgba(0,0,0,0.28);
-}
+  /* -- Leads full table -- */
+  .tbl-wrap { padding: 0 18px 18px; overflow-x: auto; }
+  table.ltbl { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
+  table.ltbl th { text-align: left; font-size: 11px; letter-spacing: .14em; color: var(--ink-3); font-weight: 500; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  table.ltbl td { padding: 13px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  table.ltbl tr:last-child td { border-bottom: none; }
+  table.ltbl tr:hover td { background: rgba(255,255,255,.015); }
+  table.ltbl tbody tr { cursor: pointer; }
+  .tbl-name { font-weight: 600; }
+  .tbl-org { font-size: 12px; color: var(--ink-3); margin-top: 2px; font-weight: 400; }
+  .tbl-val { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--gold); }
+  .tbl-days { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-3); }
+  .tbl-action { color: var(--ink-2); max-width: 240px; white-space: normal; }
 
-.gm-queue-btn {
-  border: 0; background: transparent;
-  color: var(--text-tertiary);
-  font-size: 14px;
-  cursor: pointer;
-  padding: 4px 6px;
-  border-radius: 6px;
-  opacity: 0.55;
-  transition: opacity 0.2s, color 0.2s, transform 0.1s;
-}
-.gm-queue-btn:hover { opacity: 1; }
-.gm-queue-btn.gm-queue-active {
-  color: #F2C063;
-  opacity: 1;
-  filter: drop-shadow(0 0 4px rgba(242,192,99,0.65));
-}
-.gm-queue-btn:disabled { cursor: not-allowed; opacity: 0.3; }
+  /* -- Shoots page -- */
+  .shoots-pg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .shoot-lg {
+    background: linear-gradient(180deg, var(--card-2), var(--card));
+    border: 1px solid var(--line); border-radius: 14px; padding: 22px;
+    position: relative; overflow: hidden; cursor: pointer; transition: all .18s ease;
+  }
+  .shoot-lg:hover { transform: translateY(-2px); border-color: var(--line-2); }
+  .shoot-lg .cd-num { font-family: 'JetBrains Mono', monospace; font-size: 56px; font-weight: 700; line-height: 1; color: var(--gold); letter-spacing: -.04em; }
+  .shoot-lg .cd-lbl { font-size: 11px; color: var(--ink-3); letter-spacing: .22em; display: block; margin-top: 6px; font-weight: 500; }
+  .shoot-lg .sc-title { font-size: 17px; font-weight: 700; margin-top: 18px; }
+  .shoot-lg .sc-where { font-size: 13px; color: var(--ink-2); margin-top: 4px; }
+  .shoot-lg .sc-foot { margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--line-2); display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--ink-3); }
+  .shoot-lg .sc-val { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 600; color: var(--ink); }
+  .sc-badge-pos { position: absolute; top: 18px; right: 18px; }
+  .sect-div { font-size: 11px; letter-spacing: .2em; color: var(--ink-3); text-transform: uppercase; margin: 28px 0 14px; font-weight: 500; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
 
-.goal-delete {
-  border: 0; background: transparent;
-  color: var(--text-tertiary);
-  font-size: 18px;
-  cursor: pointer;
-  padding: 0 4px;
-  opacity: 0.5;
-  transition: opacity 0.2s, color 0.2s;
-}
-.gm-row:hover .goal-delete { opacity: 1; }
-.goal-delete:hover { color: var(--danger); }
+  /* -- Revenue page -- */
+  .rev-month-lbl { font-size: 11px; letter-spacing: .18em; color: var(--ink-3); text-transform: uppercase; padding: 14px 18px 4px; font-weight: 500; }
+  table.rtbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.rtbl th { text-align: left; font-size: 11px; letter-spacing: .14em; color: var(--ink-3); font-weight: 500; padding: 10px 18px; border-bottom: 1px solid var(--line); }
+  table.rtbl td { padding: 13px 18px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  table.rtbl tr:last-child td { border-bottom: none; }
+  table.rtbl tr:hover td { background: rgba(255,255,255,.015); }
+  table.rtbl tbody tr { cursor: pointer; }
 
-.gm-show-toggle {
-  width: 100%;
-  margin: 6px 0 0;
-  padding: 9px;
-  border: 1px dashed rgba(255,255,255,0.12);
-  border-radius: 10px;
-  background: transparent;
-  color: var(--text-tertiary);
-  font-family: inherit;
-  font-size: 11px; font-weight: 600;
-  letter-spacing: 0.06em; text-transform: uppercase;
-  cursor: pointer;
-  transition: color 0.2s, border-color 0.2s;
-}
-.gm-show-toggle:hover { color: var(--text-primary); border-color: rgba(255,255,255,0.22); }
+  /* -- Skills page -- */
+  .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  .skill-card {
+    background: linear-gradient(180deg, var(--card-2), var(--card));
+    border: 1px solid var(--line); border-radius: 14px; padding: 22px;
+    cursor: pointer; text-align: left; transition: all .18s ease;
+    position: relative; overflow: hidden;
+  }
+  .skill-card:hover { border-color: rgba(196,154,60,.35); transform: translateY(-2px); }
+  .skill-card::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(300px 100px at 100% 0%, rgba(196,154,60,.05), transparent 60%); }
+  .sk-icon { width: 40px; height: 40px; border-radius: 11px; background: rgba(196,154,60,.12); border: 1px solid rgba(196,154,60,.25); display: grid; place-items: center; color: var(--gold); margin-bottom: 14px; }
+  .sk-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .sk-desc { font-size: 12px; color: var(--ink-3); line-height: 1.5; }
+  .sk-arrow { position: absolute; bottom: 18px; right: 18px; color: var(--ink-3); }
 
-.gm-push-btn {
-  width: 100%;
-  margin-top: 14px;
-  padding: 11px;
-  border: 1px dashed rgba(255,255,255,0.16);
-  border-radius: 12px;
-  background: transparent;
-  color: var(--text-tertiary);
-  font-family: inherit;
-  font-size: 11px; font-weight: 700;
-  letter-spacing: 0.10em; text-transform: uppercase;
-  cursor: pointer;
-  transition: color 0.2s, border-color 0.2s, background 0.2s;
-}
-.gm-push-btn:hover {
-  color: var(--text-primary);
-  border-color: rgba(255,255,255,0.30);
-  border-style: solid;
-  background: rgba(255,255,255,0.04);
-}
+  /* -- Modal base -- */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.70); display: grid; place-items: center; z-index: 100; backdrop-filter: blur(4px); }
+  .modal { background: var(--card-2); border: 1px solid var(--line-2); border-radius: 16px; width: 600px; max-width: 92vw; max-height: 82vh; display: flex; flex-direction: column; box-shadow: 0 40px 80px rgba(0,0,0,.6); }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--line); }
+  .modal-head h3 { margin: 0; font-size: 15px; font-weight: 600; }
+  .modal-close { width: 30px; height: 30px; border-radius: 8px; background: rgba(255,255,255,.05); border: 1px solid var(--line); display: grid; place-items: center; cursor: pointer; color: var(--ink-2); }
+  .modal-close:hover { color: var(--ink); background: rgba(255,255,255,.08); }
+  .modal-body { padding: 18px 20px; overflow-y: auto; flex: 1; }
+  .modal-prompt { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.7; color: var(--ink-2); white-space: pre-wrap; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+  .modal-foot { padding: 14px 20px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 10px; }
+  .copy-btn { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(180deg, var(--gold-2), var(--gold)); color: #1a1305; font-weight: 600; font-size: 13px; padding: 9px 16px; border-radius: 9px; border: 0; cursor: pointer; }
+  .cancel-btn { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,.05); border: 1px solid var(--line); color: var(--ink-2); font-size: 13px; padding: 9px 16px; border-radius: 9px; cursor: pointer; }
+  .claude-btn { display: inline-flex; align-items: center; gap: 8px; background: rgba(196,154,60,.12); border: 1px solid rgba(196,154,60,.30); color: var(--gold); font-weight: 600; font-size: 13px; padding: 9px 16px; border-radius: 9px; cursor: pointer; }
+  .claude-btn:hover { background: rgba(196,154,60,.20); }
 
-.goal-input-wrap.gm-input-wrap {
-  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(255,255,255,0.06);
-}
-.gm-input {
-  flex: 1; min-width: 0;
-  padding: 11px 14px;
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 12px;
-  background: rgba(0,0,0,0.28);
-  color: var(--text-primary);
-  font-family: inherit; font-size: 14px;
-  outline: none;
-  transition: border-color 0.2s, background 0.2s;
-}
-.gm-input::placeholder { color: var(--text-tertiary); }
-.gm-input:focus { border-color: rgba(255,255,255,0.28); background: rgba(0,0,0,0.36); }
+  /* -- Modal content components -- */
+  .lm-name { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .lm-org { font-size: 13px; color: var(--ink-2); margin-bottom: 10px; }
+  .lm-value-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .lm-value { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; color: var(--gold); }
+  .contact-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .contact-item { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); background: var(--card); border: 1px solid var(--line); padding: 6px 10px; border-radius: 8px; }
+  .contact-item.na { color: var(--ink-3); font-style: italic; }
+  .via-line { font-size: 12px; color: var(--ink-3); margin-bottom: 10px; }
+  .via-line b { color: var(--ink-2); font-weight: 500; }
+  .m-divider { height: 1px; background: var(--line); margin: 14px 0; }
+  .modal-section-label { font-size: 10px; letter-spacing: .18em; color: var(--ink-3); text-transform: uppercase; font-weight: 600; margin-bottom: 8px; }
+  .notes-text { font-size: 13px; color: var(--ink-2); line-height: 1.6; }
+  .dm-box { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.7; color: var(--ink-2); white-space: pre-wrap; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-bottom: 4px; }
+  .dm-copy-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .checklist { display: flex; flex-direction: column; gap: 6px; }
+  .cl-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; border-radius: 8px; background: rgba(255,255,255,.02); cursor: pointer; transition: background .15s; }
+  .cl-item:hover { background: rgba(255,255,255,.04); }
+  .cl-item.done { opacity: .55; }
+  .cl-chk { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--ink-3); display: grid; place-items: center; flex-shrink: 0; transition: all .15s; margin-top: 1px; }
+  .cl-item.done .cl-chk { background: var(--gold); border-color: var(--gold); color: #1a1305; }
+  .cl-text { font-size: 13px; color: var(--ink); line-height: 1.4; }
+  .cl-item.done .cl-text { text-decoration: line-through; color: var(--ink-3); }
 
-.gm-add {
-  padding: 11px 20px;
-  border: 0; border-radius: 12px;
-  background: linear-gradient(180deg, #FFFFFF 0%, #E8E5DD 100%);
-  color: #0A0A0B;
-  font-family: inherit; font-size: 13px; font-weight: 700;
-  cursor: pointer;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.9),
-    0 2px 8px rgba(0,0,0,0.35),
-    0 8px 22px rgba(0,0,0,0.25);
-  transition: transform 0.1s, filter 0.15s;
-}
-.gm-add:hover { filter: brightness(1.06); transform: translateY(-1px); }
-.gm-add:active { transform: translateY(0); }
+  /* -- Stat drill-down -- */
+  .drill-rows { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
+  .drill-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+  .drill-row-label { font-size: 14px; font-weight: 600; color: var(--ink); }
+  .drill-row-sub { font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+  .drill-row-val { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 700; color: var(--gold); white-space: nowrap; flex-shrink: 0; }
+  .drill-total { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--line); margin-bottom: 14px; }
+  .drill-total-label { font-size: 13px; color: var(--ink-2); font-weight: 600; }
+  .drill-total-val { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; color: var(--green); }
 
-.gm-polish {
-  padding: 11px 18px;
-  border: 1px solid rgba(255,255,255,0.10);
-  border-radius: 12px;
-  background: rgba(255,255,255,0.04);
-  color: var(--text-primary);
-  font-family: inherit; font-size: 13px; font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-}
-.gm-polish:hover {
-  background: rgba(255,255,255,0.07);
-  border-color: rgba(255,255,255,0.18);
-}
+  /* -- Rev row popover -- */
+  .rp-client { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .rp-amount { font-family: 'JetBrains Mono', monospace; font-size: 26px; font-weight: 700; color: var(--gold); margin-bottom: 12px; }
 
-.gm-status {
-  flex-basis: 100%;
-  font-size: 11px;
-  color: var(--text-tertiary);
-  min-height: 14px;
-  margin-top: 4px;
-}
-.gm-status.gm-status-error { color: var(--danger); }
-
-@media (max-width: 480px) {
-  body { padding: max(20px, env(safe-area-inset-top)) 14px 50px; }
-  .gm-card { padding: 16px; }
-  .gm-progress-num { font-size: 36px; }
-}
+  /* -- Utility -- */
+  .err-banner { background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.25); border-radius: 10px; padding: 12px 16px; font-size: 13px; color: #fca5a5; margin-bottom: 16px; }
+  .load-note { color: var(--ink-3); font-size: 12px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
 </style>
 </head>
 <body>
-<div class="page">
+<div id="root"></div>
 
-  <h1 class="dash-title">My Dashboard</h1>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
 
-  <div class="ticker-row">
-    <div class="goal-ticker" id="goalTicker" aria-live="polite" aria-atomic="true">
-      <div class="goal-ticker-led"><span class="goal-ticker-led-dot"></span></div>
-      <div class="goal-ticker-label">GOALS</div>
-      <div class="goal-ticker-stage" id="goalTickerStage">
-        <div class="goal-ticker-row">
-          <span class="goal-ticker-status" data-status="">—</span>
-          <span class="goal-ticker-text">Loading…</span>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect } = React;
+
+/* ═══ Vault API ═══ */
+function useVaultFile(path) {
+  const [data, setData]       = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState(null);
+  useEffect(() => {
+    let live = true;
+    setLoading(true); setError(null);
+    fetch('/api/vault?file=' + encodeURIComponent(path))
+      .then(r => { if (!r.ok) throw new Error(`${r.status} ${r.statusText}`); return r.text(); })
+      .then(t => { if (live) { setData(t); setLoading(false); } })
+      .catch(e => { if (live) { setError(e.message); setLoading(false); } });
+    return () => { live = false; };
+  }, [path]);
+  return { data, loading, error };
+}
+
+/* ═══ hot.md parser ═══ */
+function parseHot(md) {
+  if (!md) return null;
+  const lines = md.split('\n');
+
+  const top3 = [];
+  let inTop = false;
+  for (const l of lines) {
+    if (/^##\s+Top 3/i.test(l))    { inTop = true; continue; }
+    if (inTop && /^##\s/.test(l))  { inTop = false; }
+    if (inTop) { const m = l.match(/^\d+\.\s+(.+)/); if (m) top3.push(m[1].trim()); }
+  }
+
+  function table(re) {
+    const rows = []; let inSec = false, pastDiv = false;
+    for (const l of lines) {
+      if (re.test(l))               { inSec = true; pastDiv = false; continue; }
+      if (inSec && /^##\s/.test(l)) { inSec = false; continue; }
+      if (!inSec) continue;
+      if (/^\|[-:\s|]+\|/.test(l)) { pastDiv = true; continue; }
+      if (pastDiv && l.trim().startsWith('|')) {
+        const cells = l.split('|').map(c => c.trim()).filter((_, i, a) => i > 0 && i < a.length - 1);
+        if (cells.length >= 2) rows.push(cells);
+      }
+    }
+    return rows;
+  }
+
+  const pipeline = table(/^##\s+HOT Pipeline/i).map(([name, action, value]) => ({
+    name: name || '', action: action || '', value: value || '',
+    numValue: parseFloat((value || '').replace(/[$,]/g, '')) || 0,
+  }));
+
+  const shoots = table(/^##\s+Upcoming Shoots/i).map(([date, job, value]) => ({
+    date: date || '', job: job || '', value: value || '',
+    numValue: parseFloat((value || '').replace(/[$,]/g, '')) || 0,
+  }));
+
+  const revSec = md.match(/##\s+Revenue[^\n]*([\s\S]*?)(?:\n##|$)/i)?.[1] || '';
+  const n = s => parseFloat((s || '').replace(/[$,\s]/g, '')) || 0;
+  const collected  = n(revSec.match(/Collected[^:]*:\s*(\$?[\d,]+)/i)?.[1]);
+  const contracted = n(revSec.match(/Contracted[^:]*:\s*(\$?[\d,]+)/i)?.[1]);
+  const goal       = n(revSec.match(/goal[^:]*:\s*(\$?[\d,]+)/i)?.[1]) || 10000;
+
+  return { top3, pipeline, shoots, revenue: { collected, contracted, goal } };
+}
+
+/* ═══ Helpers ═══ */
+function daysUntil(dateStr) {
+  const clean = dateStr.replace(/\s*[--].*/, '').trim();
+  const year  = new Date().getFullYear();
+  const d = new Date(`${clean} ${year}`);
+  if (isNaN(d)) return null;
+  const today = new Date(); today.setHours(0,0,0,0); d.setHours(0,0,0,0);
+  return Math.round((d - today) / 86400000);
+}
+
+function fmtMoney(n) { return '$' + Number(n).toLocaleString(); }
+
+/* ═══ Fallback data ═══ */
+const FB = {
+  top3: [
+    'Send Donovan / HCR the revised brand-film quote',
+    'Call Hotel Seville before May 28',
+    'Edit Creekside Amp pitch deck -- final pass',
+  ],
+  pipeline: [
+    { name: 'Donovan Fiore',       action: 'Awaiting reply',            value: '$2,500', numValue: 2500 },
+    { name: 'Hotel Seville',       action: 'Call owner before May 28',  value: '$500',   numValue: 500  },
+    { name: 'Todd Curry / BeElite',action: 'Confirm quote after Cabot', value: '$1,750', numValue: 1750 },
+    { name: 'Fade Factory',        action: 'Call or walk in',           value: '$500',   numValue: 500  },
+  ],
+  shoots: [
+    { date: 'Jun 5',  job: 'Creekside Amp',      value: '--',     numValue: 0    },
+    { date: 'Jun 6',  job: 'BeElite Basketball', value: '~$1,750',numValue: 1750 },
+    { date: 'Jun 13', job: 'Straight Up Gravel', value: '$1,000', numValue: 1000 },
+  ],
+  revenue: { collected: 800, contracted: 2950, goal: 10000 },
+};
+
+/* ═══ Lead detail data ═══ */
+const HOT_LEADS = [
+  {
+    key: 'donovan',
+    name: 'Donovan Fiore', org: 'HCR / Indigo Road', stage: 'HOT', value: '$2,500', numValue: 2500,
+    action: 'Awaiting reply',
+    email: 'dfiore@theindigoroad.com', phone: null, instagram: null,
+    via: 'Marcos Oliveira CC',
+    notes: 'Marketing lead at Indigo Road and Ropeswing dual affiliation. Cyclist background. HCR video delivered May 19. Goal is a direct call, not another email thread. Bikefest June 9-13 is the next in-person window.',
+    dm: "Hey Donovan, Marcos CC'd you on the HCR thread -- I wanted to reach out directly. The video is ready to use now and I think there's a real opportunity here for Bikefest. What does your week look like for a quick call?",
+    nextActions: [
+      'Send follow-up referencing Bikefest (June 9-13)',
+      'Propose a 15-min call this week',
+      'Confirm HCR video link is ready to share',
+    ],
+  },
+  {
+    key: 'hotelseville',
+    name: 'Hotel Seville', org: 'Hospitality', stage: 'HOT', value: '$500', numValue: 500,
+    action: 'Call owner before May 28',
+    email: null, phone: 'Matt Bell gave number directly', instagram: null,
+    via: 'Matt Bell referral',
+    notes: "Matt Bell referred Bentley directly and gave the owner's number. Bentley committed to visiting before May 28. Entry Package at $500.",
+    dm: "Hey, this is Bentley Ray -- Matt Bell passed your number along. I work with Explore Harrison on video content and thought Hotel Seville could be a great fit for a brand spotlight. Would you be open to a quick visit this week?",
+    nextActions: [
+      'Call using number Matt Bell provided',
+      'Visit Hotel Seville before May 28',
+      'Present Entry Package ($500) in person',
+    ],
+  },
+  {
+    key: 'toddcurry',
+    name: 'Todd Curry / BeElite', org: 'BeElite / ImpacTees', stage: 'HOT', value: '$1,750', numValue: 1750,
+    action: 'Confirm quote after Cabot',
+    email: null, phone: null, instagram: null,
+    via: 'ImpacTees (employer)',
+    notes: "Bentley's boss at ImpacTees personally booked the Conway tournament June 6-7. Quote ~$1,750 for photos and promo across 3 venues. Cabot tournament this weekend -- confirm quote after Cabot wraps. Do not pressure at work.",
+    dm: 'Already booked -- this is a confirm call. Follow up after Cabot wraps to lock in the full quote and scope.',
+    nextActions: [
+      'Wait for Cabot tournament to wrap',
+      'Confirm $1,750 quote covers all 3 venues',
+      'Do not discuss at ImpacTees',
+    ],
+  },
+  {
+    key: 'fadefactory',
+    name: 'Fade Factory', org: 'Local barber brand', stage: 'HOT', value: '$500', numValue: 500,
+    action: 'Call or walk in',
+    email: null, phone: null, instagram: null,
+    via: 'Ray Ray personal approach',
+    notes: "Ray Ray approached Bentley personally wanting to buy. Text sent May 11, no response in 10+ days. Next move: phone call or walk in. Do not send another text.",
+    dm: "Hey Ray Ray, just wanted to follow up on that video conversation. I've got some time opening up -- would love to swing by and show you what we did for some other local shops.",
+    nextActions: [
+      'Call Ray Ray (do not text again)',
+      'Or walk into Fade Factory in person',
+      'Show portfolio from similar local shops',
+    ],
+  },
+];
+
+const WARM_DETAIL = [
+  {
+    key: 'ozarkbbq', name: 'Ozark BBQ', type: 'Local restaurant',
+    via: 'Referral', service: 'Monthly content retainer',
+    numValue: 1500, action: 'Follow up after June shoots', lastContact: 7,
+    notes: '$300 collected, video already delivered. Retainer pitch planned around June 11 (30 days post-delivery).',
+    dm: "Hey, wanted to check in -- how's the video performing? I've been thinking a monthly content package could be a solid next step for you all.",
+  },
+  {
+    key: 'cliffhouse', name: 'Cliff House Inn', type: 'Hospitality',
+    via: 'Toinette Madison referral', service: 'Hospitality brand reel',
+    numValue: 2000, action: 'Send portfolio reel', lastContact: 12,
+    notes: 'No outreach sent yet. Toinette Madison passed along the contact.',
+    dm: "Hey, Toinette Madison suggested I reach out -- I work with Explore Harrison on destination video content and thought Cliff House Inn would be a great fit. Do you have a minute to connect?",
+  },
+  {
+    key: 'lowgapcafe', name: 'Low Gap Cafe', type: 'F&B brand video',
+    via: 'Toinette Madison referral', service: 'Short-form brand video',
+    numValue: 800, action: 'Reach out re: summer menu', lastContact: 5,
+    notes: 'No outreach sent yet. Toinette Madison passed along the contact.',
+    dm: "Hey, Toinette Madison passed your info along. I create short-form video content for restaurants and local businesses -- I'd love to show you what we've done for some spots in the area. Would you be open to it?",
+  },
+];
+
+const SHOOT_DETAIL = {
+  'Creekside Amp': {
+    title: 'Creekside Amp', client: 'Explore Harrison',
+    date: 'Jun 5, 2026', location: 'Harrison AR',
+    value: 'Retainer (Explore Harrison deal)', netValue: 'Retainer included',
+    contractor: null,
+    notes: 'Nikky Cagle attending to lock partnership terms. Lock revenue split conversation in person.',
+    prep: [
+      'Confirm call time and logistics with Nikky Cagle',
+      'Bring contract terms for revenue split conversation',
+      'Pack wide lens for venue establishing shots',
+    ],
+  },
+  'BeElite Basketball': {
+    title: 'BeElite Basketball', client: 'Todd Curry / BeElite',
+    date: 'Jun 6-7, 2026', location: 'Conway AR',
+    value: '~$1,750', netValue: '~$1,750 (no contractor costs)',
+    contractor: null,
+    notes: 'Photos and promo video across 3 venues. Confirm final scope with Todd after Cabot.',
+    prep: [
+      'Confirm final scope and quote with Todd Curry',
+      'Get schedule and venue list for Jun 6-7',
+      'Pack sports and action photography kit',
+    ],
+  },
+  'Straight Up Gravel': {
+    title: 'Straight Up Gravel', client: 'Event client',
+    date: 'Jun 13, 2026', location: 'NW Arkansas',
+    value: '$1,200', netValue: '$1,000 net',
+    contractor: 'Billy Barrett -- drone -- $200',
+    notes: 'Event coverage. Billy Barrett handling drone footage. Contractor cost: $200. Net to Bray Films: $1,000.',
+    prep: [
+      'Confirm Billy Barrett availability and drone plan',
+      'Get event schedule and key shot list',
+      'Coordinate parking and access in NW Arkansas',
+    ],
+  },
+};
+
+/* lookup maps */
+const WARM_DETAIL_MAP = Object.fromEntries(WARM_DETAIL.map(w => [w.name, w]));
+
+function matchHotLead(pipelineName) {
+  const pl = pipelineName.toLowerCase();
+  return HOT_LEADS.find(h => {
+    const firstName = h.name.toLowerCase().split(/[\s/]+/)[0];
+    return pl.includes(firstName);
+  });
+}
+
+/* ═══ Icons ═══ */
+const I = {
+  film:    p => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...p}><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M3 15h18M8 4v16M16 4v16"/></svg>,
+  grid:    p => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...p}><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>,
+  flame:   p => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...p}><path d="M12 3s5 4 5 9a5 5 0 11-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-8z"/></svg>,
+  cam:     p => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...p}><path d="M3 7h11l2 3h5v9H3z"/><circle cx="11" cy="14" r="3"/></svg>,
+  dollar:  p => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...p}><path d="M12 3v18M16 7H10a3 3 0 100 6h4a3 3 0 110 6H7"/></svg>,
+  award:   p => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...p}><circle cx="12" cy="9" r="6"/><path d="M8 13l-2 8 6-3 6 3-2-8"/></svg>,
+  bell:    p => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...p}><path d="M6 8a6 6 0 1112 0v5l2 3H4l2-3V8zM9 19a3 3 0 006 0"/></svg>,
+  clock:   p => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...p}><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>,
+  trendUp: p => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...p}><path d="M3 17l6-6 4 4 8-8M21 7v6h-6"/></svg>,
+  arrow:   p => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...p}><path d="M5 12h14M13 6l6 6-6 6"/></svg>,
+  chev:    p => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...p}><path d="M9 6l6 6-6 6"/></svg>,
+  check:   p => <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M5 12l5 5L20 7"/></svg>,
+  plus:    p => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" {...p}><path d="M12 5v14M5 12h14"/></svg>,
+  cal:     p => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...p}><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>,
+  target:  p => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...p}><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>,
+  search:  p => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...p}><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg>,
+  zap:     p => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...p}><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg>,
+  edit2:   p => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...p}><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+  mail:    p => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...p}><path d="M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z"/><path d="M22 6l-10 7L2 6"/></svg>,
+  star:    p => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...p}><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>,
+  refresh: p => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...p}><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>,
+  copy:    p => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...p}><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>,
+  x:       p => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" {...p}><path d="M18 6L6 18M6 6l12 12"/></svg>,
+  phone:   p => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...p}><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.86 9.11 19.79 19.79 0 01.73 2.49 2 2 0 012.72.5h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L7.09 8.91a16 16 0 006 6l1.27-.91a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>,
+  ig:      p => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...p}><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>,
+};
+
+/* ═══ Sidebar ═══ */
+const NAV = [
+  { id: 'dash',    label: 'Command Center', icon: 'grid'   },
+  { id: 'leads',   label: 'Leads',          icon: 'flame'  },
+  { id: 'shoots',  label: 'Shoots',         icon: 'cam'    },
+  { id: 'revenue', label: 'Revenue',        icon: 'dollar' },
+  { id: 'skills',  label: 'Skills',         icon: 'award'  },
+];
+
+function Sidebar({ active, go }) {
+  return (
+    <aside className="sidebar">
+      <div className="logo">
+        <div className="logo-mark">{I.film()}</div>
+        <div className="logo-text"><b>BRAY FILMS</b><small>Studio OS</small></div>
+      </div>
+      <div className="nav-section">
+        <div className="nav-label">Workspace</div>
+        {NAV.map(n => (
+          <div key={n.id} className={'nav-item ' + (active === n.id ? 'active' : '')} onClick={() => go(n.id)}>
+            <span className="nav-ic">{I[n.icon]()}</span>
+            <span>{n.label}</span>
+          </div>
+        ))}
+      </div>
+      <div className="nav-section">
+        <div className="nav-label">Tools</div>
+        <div className="nav-item"><span className="nav-ic">{I.cal()}</span><span>Calendar</span></div>
+        <div className="nav-item"><span className="nav-ic">{I.target()}</span><span>Goals</span></div>
+      </div>
+      <div className="sidebar-foot">
+        <div className="profile-pill">
+          <div className="avatar">BR</div>
+          <div className="who"><b>Bentley Ray</b><small>Bray Films · Founder</small></div>
+          <span className="online-dot"></span>
         </div>
       </div>
-      <div class="goal-ticker-meta" id="goalTickerMeta">0/0</div>
-    </div>
-  </div>
+    </aside>
+  );
+}
 
-  <div class="day-ring-wrap">
-    <div class="day-ring">
-      <svg viewBox="0 0 120 120">
-        <defs>
-          <filter id="dayRingGlow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="2.4" result="b" />
-            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-        </defs>
-        <circle class="day-ring-track" cx="60" cy="60" r="52" />
-        <circle class="day-ring-fill"  cx="60" cy="60" r="52" id="dayRingFill" filter="url(#dayRingGlow)" />
-      </svg>
-      <div class="day-ring-overlay">
-        <div class="day-ring-percent" id="dayRingPercent">—</div>
-        <div class="day-ring-phase"   id="dayRingPhase">—</div>
-        <div class="day-ring-clock"   id="dayRingClock">—</div>
+/* ═══ Clock ═══ */
+function useClock() {
+  const [now, setNow] = useState(new Date());
+  useEffect(() => { const id = setInterval(() => setNow(new Date()), 1000); return () => clearInterval(id); }, []);
+  return now;
+}
+function Clock() {
+  const now  = useClock();
+  const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+  const date = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  return (
+    <div className="clock-widget">
+      <span style={{ color: 'var(--ink-3)' }}>{I.clock()}</span>
+      <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
+        <span className="clock-t">{time}</span>
+        <span className="clock-d">{date} · CST</span>
       </div>
     </div>
-    <div class="day-ring-text">
-      <div class="day-ring-status"    id="dayRingStatus">Loading…</div>
-      <div class="day-ring-remaining" id="dayRingRemaining">—</div>
-      <div class="day-ring-hours">8:00 AM – 12:00 AM</div>
+  );
+}
+
+/* ═══ Sparkline ═══ */
+function Spark({ pts, color }) {
+  const w = 140, h = 38;
+  const min = Math.min(...pts), max = Math.max(...pts), rng = (max - min) || 1;
+  const d = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${i / (pts.length - 1) * w} ${h - (p - min) / rng * h * 0.8 - 4}`).join(' ');
+  const area = d + ` L ${w} ${h} L 0 ${h} Z`;
+  const id = 'sg' + color.replace('#','');
+  return (
+    <svg className="spark-wrap" width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity=".35"/>
+          <stop offset="100%" stopColor={color} stopOpacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d={area} fill={`url(#${id})`}/>
+      <path d={d} fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+/* ═══ Revenue bar (shared) ═══ */
+function RevBar({ collected, contracted, goal }) {
+  const total = collected + contracted;
+  const cPct  = Math.min(collected / goal * 100, 100);
+  const kPct  = Math.min(contracted / goal * 100, 100 - cPct);
+  const rem   = Math.max(goal - total, 0);
+  return (
+    <div className="rev-wrap">
+      <div className="rev-top-row">
+        <div className="rev-big">{fmtMoney(total)}<span className="rev-of"> / {fmtMoney(goal)}</span></div>
+        <span className="rev-pct-badge">{Math.round(total / goal * 100)}% to goal</span>
+      </div>
+      <div className="rev-bar">
+        <div className="seg-c" style={{ width: `${cPct}%` }}></div>
+        <div className="seg-k" style={{ width: `${kPct}%` }}></div>
+      </div>
+      <div className="rev-legend">
+        <div className="rev-leg leg-c"><span className="leg-swatch"></span><span className="leg-label">Collected</span><span className="leg-amt">{fmtMoney(collected)}</span></div>
+        <div className="rev-leg leg-k"><span className="leg-swatch"></span><span className="leg-label">Contracted (pending invoice)</span><span className="leg-amt">{fmtMoney(contracted)}</span></div>
+        <div className="rev-leg leg-r"><span className="leg-swatch"></span><span className="leg-label">Remaining to goal</span><span className="leg-amt">{fmtMoney(rem)}</span></div>
+      </div>
     </div>
-  </div>
+  );
+}
 
-  <div class="section">
-    <div class="section-title">To Do List</div>
+/* ════════════════════════════════════════════
+   MODAL SYSTEM
+════════════════════════════════════════════ */
 
-    <!-- TODAY -->
-    <div class="gm-card" id="gmCardToday">
-      <div class="gm-header">
-        <div class="gm-header-left">
-          <div class="gm-eyebrow" id="todayLabel">Today —</div>
-          <div class="gm-progress-row">
-            <span class="gm-progress-num"   id="gmProgressNum">0</span>
-            <span class="gm-progress-total" id="gmProgressTotal">/ 0</span>
-            <span class="gm-progress-label" id="gmProgressLabel">no goals yet</span>
+function CopyBtn({ text, label = 'Copy', className = 'copy-btn' }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+  return <button className={className} onClick={copy}>{I.copy()} {copied ? 'Copied!' : label}</button>;
+}
+
+function BaseModal({ onClose, title, children, foot }) {
+  useEffect(() => {
+    const h = e => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', h);
+    return () => document.removeEventListener('keydown', h);
+  }, [onClose]);
+  return (
+    <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="modal">
+        <div className="modal-head">
+          <h3>{title}</h3>
+          <div className="modal-close" onClick={onClose}>{I.x()}</div>
+        </div>
+        <div className="modal-body">{children}</div>
+        {foot && <div className="modal-foot">{foot}</div>}
+      </div>
+    </div>
+  );
+}
+
+function LeadModal({ lead, onClose }) {
+  const [checks, setChecks] = useState([false, false, false]);
+  const toggle = i => setChecks(c => c.map((v, j) => j === i ? !v : v));
+  const claudePrompt = `I'm working on the ${lead.name} lead. Here's the context: ${lead.notes}. Draft my next message.`;
+
+  return (
+    <BaseModal
+      onClose={onClose}
+      title={lead.name}
+      foot={
+        <>
+          <button className="cancel-btn" onClick={onClose}>Close</button>
+          <CopyBtn text={claudePrompt} label="Open in Claude" className="claude-btn"/>
+        </>
+      }
+    >
+      <div className="lm-name">{lead.name}</div>
+      <div className="lm-org">{lead.org}</div>
+      <div className="lm-value-row">
+        <span className="badge-hot"><span className="ember"></span>HOT</span>
+        <span className="lm-value">{lead.value}</span>
+      </div>
+
+      <div className="contact-row">
+        {lead.phone
+          ? <span className="contact-item">{I.phone()} {lead.phone}</span>
+          : <span className="contact-item na">No phone on file</span>}
+        {lead.email
+          ? <span className="contact-item">{I.mail({ width: 14, height: 14 })} {lead.email}</span>
+          : <span className="contact-item na">No email on file</span>}
+        {lead.instagram
+          ? <span className="contact-item">{I.ig()} {lead.instagram}</span>
+          : <span className="contact-item na">No IG on file</span>}
+      </div>
+
+      <div className="via-line">via <b>{lead.via}</b></div>
+
+      <div className="m-divider"></div>
+
+      <div className="modal-section-label">Notes</div>
+      <div className="notes-text" style={{ marginBottom: 14 }}>{lead.notes}</div>
+
+      <div className="m-divider"></div>
+
+      <div className="dm-copy-row">
+        <div className="modal-section-label" style={{ margin: 0 }}>Day 1 DM</div>
+        <CopyBtn text={lead.dm} label="Copy DM"/>
+      </div>
+      <div className="dm-box">{lead.dm}</div>
+
+      <div className="m-divider"></div>
+
+      <div className="modal-section-label">Next Actions</div>
+      <div className="checklist">
+        {lead.nextActions.map((a, i) => (
+          <div key={i} className={'cl-item ' + (checks[i] ? 'done' : '')} onClick={() => toggle(i)}>
+            <div className="cl-chk">{checks[i] && I.check()}</div>
+            <div className="cl-text">{a}</div>
+          </div>
+        ))}
+      </div>
+    </BaseModal>
+  );
+}
+
+function WarmModal({ lead, onClose }) {
+  return (
+    <BaseModal
+      onClose={onClose}
+      title={lead.name}
+      foot={
+        <>
+          <button className="cancel-btn" onClick={onClose}>Close</button>
+          <CopyBtn text={lead.dm} label="Copy DM"/>
+        </>
+      }
+    >
+      <div style={{ marginBottom: 10 }}>
+        <div className="lm-org">{lead.type}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span className="badge-warm">WARM</span>
+          {lead.numValue > 0 && <span className="lm-value">{fmtMoney(lead.numValue)}</span>}
+        </div>
+      </div>
+
+      <div className="via-line">via <b>{lead.via}</b></div>
+      <div className="via-line">Recommended service: <b>{lead.service}</b></div>
+
+      <div className="m-divider"></div>
+
+      <div className="modal-section-label">Notes</div>
+      <div className="notes-text" style={{ marginBottom: 14 }}>{lead.notes}</div>
+
+      <div className="m-divider"></div>
+
+      <div className="dm-copy-row">
+        <div className="modal-section-label" style={{ margin: 0 }}>Day 1 DM</div>
+      </div>
+      <div className="dm-box">{lead.dm}</div>
+    </BaseModal>
+  );
+}
+
+function StatModal({ statKey, onClose }) {
+  if (statKey === 'collected') {
+    return (
+      <BaseModal onClose={onClose} title="Revenue Collected -- May 2026" foot={<button className="cancel-btn" onClick={onClose}>Close</button>}>
+        <div className="modal-section-label">Breakdown</div>
+        <div className="drill-rows">
+          <div className="drill-row">
+            <div><div className="drill-row-label">Explore Harrison</div><div className="drill-row-sub">May 10</div></div>
+            <div className="drill-row-val">$500</div>
+          </div>
+          <div className="drill-row">
+            <div><div className="drill-row-label">Ozark BBQ</div><div className="drill-row-sub">May 02</div></div>
+            <div className="drill-row-val">$300</div>
           </div>
         </div>
-        <div class="gm-streak" id="gmStreak">
-          <span class="gm-streak-icon">⚡</span>
-          <span class="gm-streak-num" id="gmStreakNum">0</span>
-          <span>day streak</span>
+        <div className="drill-total">
+          <span className="drill-total-label">Total Collected</span>
+          <span className="drill-total-val">$800</span>
+        </div>
+      </BaseModal>
+    );
+  }
+
+  if (statKey === 'pipeline') {
+    const total = HOT_LEADS.reduce((s, h) => s + h.numValue, 0);
+    return (
+      <BaseModal onClose={onClose} title="HOT Pipeline Breakdown" foot={<button className="cancel-btn" onClick={onClose}>Close</button>}>
+        <div className="modal-section-label">4 Active HOT Leads</div>
+        <div className="drill-rows">
+          {HOT_LEADS.map((h, i) => (
+            <div key={i} className="drill-row">
+              <div>
+                <div className="drill-row-label">{h.name}</div>
+                <div className="drill-row-sub">{h.action}</div>
+              </div>
+              <div className="drill-row-val">{h.value}</div>
+            </div>
+          ))}
+        </div>
+        <div className="drill-total">
+          <span className="drill-total-label">Total Pipeline</span>
+          <span className="drill-total-val">{fmtMoney(total)}</span>
+        </div>
+      </BaseModal>
+    );
+  }
+
+  if (statKey === 'goal') {
+    return (
+      <BaseModal onClose={onClose} title="Monthly Goal -- May 2026" foot={<button className="cancel-btn" onClick={onClose}>Close</button>}>
+        <div className="modal-section-label">Committed Revenue</div>
+        <div className="drill-rows">
+          <div className="drill-row">
+            <div className="drill-row-label">Collected -- May</div>
+            <div className="drill-row-val">$800</div>
+          </div>
+          <div className="drill-row">
+            <div><div className="drill-row-label">Contracted -- Straight Up Gravel</div></div>
+            <div className="drill-row-val">$1,200</div>
+          </div>
+          <div className="drill-row">
+            <div><div className="drill-row-label">Contracted -- BeElite Basketball</div></div>
+            <div className="drill-row-val">$1,750</div>
+          </div>
+        </div>
+        <div className="drill-total" style={{ marginBottom: 16 }}>
+          <span className="drill-total-label">Total Committed</span>
+          <span className="drill-total-val">$3,750</span>
+        </div>
+
+        <div className="m-divider"></div>
+
+        <div className="modal-section-label">Gap to $10,000 Goal</div>
+        <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 24, fontWeight: 700, color: 'var(--orange)', marginBottom: 16 }}>$6,250</div>
+
+        <div className="modal-section-label">Leads to Close</div>
+        <div className="drill-rows">
+          <div className="drill-row">
+            <div className="drill-row-label">Donovan Fiore / HCR</div>
+            <div className="drill-row-val">$2,500</div>
+          </div>
+          <div className="drill-row">
+            <div className="drill-row-label">Hotel Seville</div>
+            <div className="drill-row-val">$500</div>
+          </div>
+          <div className="drill-row">
+            <div className="drill-row-label">Fade Factory</div>
+            <div className="drill-row-val">$500</div>
+          </div>
+        </div>
+      </BaseModal>
+    );
+  }
+
+  return null;
+}
+
+function ShootModal({ shoot, onClose }) {
+  const [checks, setChecks] = useState([false, false, false]);
+  const toggle = i => setChecks(c => c.map((v, j) => j === i ? !v : v));
+
+  return (
+    <BaseModal onClose={onClose} title={shoot.title} foot={<button className="cancel-btn" onClick={onClose}>Close</button>}>
+      <div style={{ marginBottom: 14 }}>
+        <div className="via-line"><b>{shoot.date}</b> -- {shoot.location}</div>
+        <div className="via-line">Client: <b>{shoot.client}</b></div>
+      </div>
+
+      <div className="drill-rows">
+        <div className="drill-row">
+          <div className="drill-row-label">Value</div>
+          <div className="drill-row-val">{shoot.value}</div>
+        </div>
+        <div className="drill-row">
+          <div className="drill-row-label">Net</div>
+          <div className="drill-row-val">{shoot.netValue}</div>
+        </div>
+        {shoot.contractor && (
+          <div className="drill-row">
+            <div className="drill-row-label">Contractor</div>
+            <div style={{ color: 'var(--ink-2)', fontSize: 13, textAlign: 'right' }}>{shoot.contractor}</div>
+          </div>
+        )}
+      </div>
+
+      <div className="m-divider"></div>
+
+      <div className="modal-section-label">Notes</div>
+      <div className="notes-text" style={{ marginBottom: 14 }}>{shoot.notes}</div>
+
+      <div className="m-divider"></div>
+
+      <div className="modal-section-label">Prep Checklist</div>
+      <div className="checklist">
+        {shoot.prep.map((p, i) => (
+          <div key={i} className={'cl-item ' + (checks[i] ? 'done' : '')} onClick={() => toggle(i)}>
+            <div className="cl-chk">{checks[i] && I.check()}</div>
+            <div className="cl-text">{p}</div>
+          </div>
+        ))}
+      </div>
+    </BaseModal>
+  );
+}
+
+function RevRowModal({ row, onClose }) {
+  const invoiceNote = `${row.client} -- ${fmtMoney(row.amount)} -- ${row.status} -- ${row.date}`;
+  return (
+    <BaseModal
+      onClose={onClose}
+      title="Revenue Detail"
+      foot={
+        <>
+          <button className="cancel-btn" onClick={onClose}>Close</button>
+          <CopyBtn text={invoiceNote} label="Copy Invoice Note"/>
+        </>
+      }
+    >
+      <div className="rp-client">{row.client}</div>
+      <div className="rp-amount">{fmtMoney(row.amount)}</div>
+      <div style={{ marginBottom: 12 }}>
+        {row.status === 'collected'
+          ? <span className="badge-ok">Collected</span>
+          : <span className="badge-pending">Contracted</span>}
+      </div>
+      <div className="via-line">Date: <b>{row.date}</b></div>
+    </BaseModal>
+  );
+}
+
+function ModalManager({ modal, onClose }) {
+  if (!modal) return null;
+  const { type, data } = modal;
+  if (type === 'lead')    return <LeadModal lead={data} onClose={onClose}/>;
+  if (type === 'warm')    return <WarmModal lead={data} onClose={onClose}/>;
+  if (type === 'shoot')   return <ShootModal shoot={data} onClose={onClose}/>;
+  if (type === 'stat')    return <StatModal statKey={data} onClose={onClose}/>;
+  if (type === 'revrow')  return <RevRowModal row={data} onClose={onClose}/>;
+  return null;
+}
+
+/* ════════════════════════════════════════════
+   PAGE 1: Command Center
+════════════════════════════════════════════ */
+const WARM_PIPELINE = [
+  { name: 'Ozark BBQ',       sub: 'Brand film · referral',  init: 'OB', heat: .55 },
+  { name: 'Cliff House Inn', sub: 'Hospitality reel',        init: 'CH', heat: .70 },
+  { name: 'Low Gap Cafe',    sub: 'Menu + ambience video',   init: 'LG', heat: .40 },
+];
+
+function DashPage({ openModal }) {
+  const { data: raw, loading, error } = useVaultFile('hot.md');
+  const parsed = raw ? parseHot(raw) : null;
+  const d      = parsed || FB;
+
+  const pipeVal = d.pipeline.reduce((s, l) => s + l.numValue, 0);
+  const next    = d.shoots[0];
+  const nextD   = next ? daysUntil(next.date) : null;
+  const goalPct = Math.round((d.revenue.collected + d.revenue.contracted) / d.revenue.goal * 100);
+
+  const [done, setDone] = useState({});
+  const toggle = i => setDone(s => ({ ...s, [i]: !s[i] }));
+
+  return (
+    <>
+      <div className="topbar">
+        <div>
+          <div className="crumb">
+            <span>Workspace · Command Center</span>
+            <span className="live-badge"><span className="pulse"></span>LIVE</span>
+          </div>
+          <h1 className="page-title">Command Center</h1>
+          <div className="subtitle">Good morning, <em>Bentley</em> -- here's your business at a glance.</div>
+        </div>
+        <div className="top-right">
+          <Clock/>
+          <button className="icon-btn">{I.search()}</button>
+          <button className="icon-btn">{I.bell()}<span className="notif-dot"></span></button>
+          <button className="new-btn">{I.plus()} New Lead</button>
         </div>
       </div>
-      <div class="gm-bar" id="gmBar"></div>
-      <ul id="goalList" class="goal-list gm-list"></ul>
-      <div id="emptyState" class="empty-state">No goals for today yet — add one below.</div>
-      <button type="button" id="gmPushBtn" class="gm-push-btn" style="display:none;">Push remaining to tomorrow</button>
-      <div class="goal-input-wrap gm-input-wrap">
-        <input id="goalInput" class="gm-input" type="text" placeholder="Add a goal for today…" autocomplete="off">
-        <button type="button" id="goalAddBtn"    class="gm-add">+ Add</button>
-        <button type="button" id="goalPolishBtn" class="gm-polish">✨ Polish</button>
-        <div class="gm-status" id="polishStatus"></div>
-      </div>
-    </div>
 
-    <!-- PLAN TOMORROW -->
-    <div class="gm-card gm-card-tomorrow" id="gmCardTomorrow">
-      <div class="gm-header">
-        <div class="gm-header-left">
-          <div class="gm-eyebrow" id="tomorrowLabel">Plan tomorrow —</div>
-          <div class="gm-tomorrow-sub">Write tonight, locked until 6 AM.</div>
+      {error   && <div className="err-banner">Vault fetch failed: {error}. Showing cached data.</div>}
+      {loading && <div className="load-note"><span className="pulse"></span>Fetching live vault data...</div>}
+
+      {/* Stats */}
+      <div className="stat-grid">
+        <div className="stat s-green" onClick={() => openModal({ type: 'stat', data: 'collected' })}>
+          <div className="stat-row1">
+            <div><div className="stat-label">Revenue Collected -- May</div><div className="stat-value">{fmtMoney(d.revenue.collected)}</div></div>
+            <div className="stat-badge">{I.dollar()}</div>
+          </div>
+          <div className="stat-delta d-green">{I.trendUp({ style: { color: 'var(--green)' } })} <b>{fmtMoney(d.revenue.collected)}</b> collected this month</div>
+          <Spark pts={[10,12,9,14,18,16,22,28,34]} color="#34d399"/>
         </div>
-        <div class="gm-tomorrow-count" id="gmTomorrowCount">0 planned</div>
+
+        <div className="stat s-blue" onClick={() => openModal({ type: 'stat', data: 'pipeline' })}>
+          <div className="stat-row1">
+            <div><div className="stat-label">Pipeline Value</div><div className="stat-value">{fmtMoney(pipeVal)}</div></div>
+            <div className="stat-badge">{I.flame()}</div>
+          </div>
+          <div className="stat-delta d-blue"><b>{d.pipeline.length} active leads</b> -- all HOT</div>
+          <Spark pts={[18,22,20,28,26,30,34,32,38]} color="#60a5fa"/>
+        </div>
+
+        <div className="stat s-gold" onClick={() => { const sd = SHOOT_DETAIL[next ? next.job : '']; if (sd) openModal({ type: 'shoot', data: sd }); }}>
+          <div className="stat-row1">
+            <div>
+              <div className="stat-label">Next Shoot</div>
+              <div className="stat-value">{nextD !== null ? nextD : '--'}<span className="stat-unit">days</span></div>
+            </div>
+            <div className="stat-badge">{I.cam()}</div>
+          </div>
+          <div className="stat-delta d-gold"><b>{next ? next.job : '--'}</b> · {next ? next.date : '--'}</div>
+          <Spark pts={[40,32,28,24,20,18,14,10,8]} color="#c49a3c"/>
+        </div>
+
+        <div className="stat s-orange" onClick={() => openModal({ type: 'stat', data: 'goal' })}>
+          <div className="stat-row1">
+            <div><div className="stat-label">Monthly Goal</div><div className="stat-value">{goalPct}<span className="stat-unit">%</span></div></div>
+            <div className="stat-badge">{I.target()}</div>
+          </div>
+          <div className="stat-delta d-orange"><b>{fmtMoney(Math.max(d.revenue.goal - d.revenue.collected - d.revenue.contracted, 0))}</b> remaining to {fmtMoney(d.revenue.goal)}</div>
+          <Spark pts={[2,3,4,4,5,6,7,7,Math.max(goalPct/10,1)]} color="#f59e0b"/>
+        </div>
       </div>
-      <ul id="tomorrowList" class="goal-list gm-list"></ul>
-      <div id="tomorrowEmpty" class="empty-state">Nothing planned for tomorrow yet</div>
-      <div class="goal-input-wrap gm-input-wrap">
-        <input id="tomorrowInput" class="gm-input" type="text" placeholder="Add a goal for tomorrow…" autocomplete="off">
-        <button type="button" id="tomorrowAddBtn"    class="gm-add">+ Add</button>
-        <button type="button" id="tomorrowPolishBtn" class="gm-polish">✨ Polish</button>
-        <div class="gm-status" id="tomorrowStatus"></div>
+
+      {/* Body */}
+      <div className="body-grid">
+        <div className="stack">
+          {/* Pipeline */}
+          <div className="panel">
+            <div className="panel-head">
+              <h3>Pipeline Snapshot</h3>
+              <span className="ph-link">View all {I.arrow({ width: 11, height: 11 })}</span>
+            </div>
+            <div className="lead-grid">
+              {d.pipeline.map((l, i) => {
+                const hl = matchHotLead(l.name);
+                return (
+                  <div key={i} className="lead-card" onClick={() => { if (hl) openModal({ type: 'lead', data: hl }); }}>
+                    <div className="lead-top">
+                      <div><div className="lead-name">{l.name}</div><div className="lead-sub">HOT lead</div></div>
+                      <span className="badge-hot"><span className="ember"></span>HOT</span>
+                    </div>
+                    <div className="lead-actions-row">
+                      <div><span className="lead-action-lbl">NEXT ACTION</span><span className="lead-action-text">{l.action}</span></div>
+                      <div className="lead-value">{l.value}</div>
+                    </div>
+                    <div className="lead-meta"><span>{I.target({ width: 11, height: 11 })} <b>Active</b></span></div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Shoots */}
+          <div className="panel">
+            <div className="panel-head">
+              <h3>Upcoming Shoots</h3>
+              <span className="ph-link">Full calendar {I.arrow({ width: 11, height: 11 })}</span>
+            </div>
+            <div className="shoots-row">
+              {d.shoots.map((s, i) => {
+                const days = daysUntil(s.date);
+                const sd   = SHOOT_DETAIL[s.job];
+                return (
+                  <div key={i} className="shoot-sm" onClick={() => { if (sd) openModal({ type: 'shoot', data: sd }); }}>
+                    <div className="shoot-cd">{days !== null ? String(days).padStart(2,'0') : '--'}<span className="shoot-cd-lbl">DAYS OUT</span></div>
+                    <div className="shoot-title">{s.job}</div>
+                    <div className="shoot-where">{s.date}</div>
+                    <div className="shoot-foot">
+                      <span>{I.cam({ width: 13, height: 13, style: { verticalAlign: '-2px' } })} Scheduled</span>
+                      <span className="shoot-net">{s.value || '--'}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Right column */}
+        <div className="right-col">
+          {/* Top 3 */}
+          <div className="panel">
+            <div className="panel-head"><h3>Top 3 Priorities</h3><span className="ph-meta">TODAY</span></div>
+            <div className="priorities-list">
+              {d.top3.map((t, i) => (
+                <div key={i} className={'pri ' + (done[i] ? 'done' : '')}>
+                  <div className="pri-num">{i + 1}</div>
+                  <div className={'chk ' + (done[i] ? 'on' : '')} onClick={() => toggle(i)}>{I.check()}</div>
+                  <div className="pri-body"><div className="pri-text">{t}</div></div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Revenue */}
+          <div className="panel">
+            <div className="panel-head"><h3>Revenue -- May 2026</h3><span className="ph-meta">MTD</span></div>
+            <RevBar collected={d.revenue.collected} contracted={d.revenue.contracted} goal={d.revenue.goal}/>
+          </div>
+
+          {/* Warm pipeline */}
+          <div className="panel">
+            <div className="panel-head">
+              <h3>Warm Pipeline</h3>
+              <span className="ph-link">{I.plus({ width: 12, height: 12 })} Add</span>
+            </div>
+            <div className="warm-list">
+              {WARM_PIPELINE.map((wr, i) => {
+                const wd = WARM_DETAIL_MAP[wr.name];
+                return (
+                  <div key={i} className="warm-row" onClick={() => { if (wd) openModal({ type: 'warm', data: wd }); }}>
+                    <div className="warm-init">{wr.init}</div>
+                    <div className="warm-name">{wr.name}<small>{wr.sub}</small></div>
+                    <div className="warm-bar" style={{ opacity: wr.heat }}></div>
+                    <span style={{ color: 'var(--ink-3)' }}>{I.chev()}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
+    </>
+  );
+}
 
-</div>
+/* ════════════════════════════════════════════
+   PAGE 2: Leads
+════════════════════════════════════════════ */
+const WARM_LEADS = [
+  { name: 'Ozark BBQ',       org: 'Local restaurant',  numValue: 1500, stage: 'WARM', action: 'Follow up after June shoots', lastContact: 7  },
+  { name: 'Cliff House Inn', org: 'Hospitality',        numValue: 2000, stage: 'WARM', action: 'Send portfolio reel',          lastContact: 12 },
+  { name: 'Low Gap Cafe',    org: 'F&B brand video',    numValue: 800,  stage: 'WARM', action: 'Reach out re: summer menu',   lastContact: 5  },
+];
 
-<script>
-(function () {
-  'use strict';
+function LeadsPage({ openModal }) {
+  const { data: raw, loading, error } = useVaultFile('hot.md');
+  const parsed   = raw ? parseHot(raw) : null;
+  const hotLeads = (parsed || FB).pipeline;
+  const [filter, setFilter] = useState('ALL');
 
-  // Paste your Anthropic key here to enable ✨ Polish. Empty = falls back to plain add.
-  const ANTHROPIC_API_KEY = '';
-
-  const WAKE_HOUR  = 8;
-  const SLEEP_HOUR = 24;
-
-  // ---------- storage helpers ----------
-  function storeGet(key) {
-    try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; }
-  }
-  function storeSet(key, value) {
-    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
-    if (typeof key === 'string' && key.indexOf('goals:') === 0) {
-      window.dispatchEvent(new CustomEvent('goals-changed'));
-    }
-  }
-  function storeDelete(key) { try { localStorage.removeItem(key); } catch (e) {} }
-  function storeListKeys(prefix) {
-    const out = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (k && k.indexOf(prefix) === 0) out.push(k);
-    }
-    return out;
-  }
-
-  // ---------- date helpers ----------
-  function pad2(n) { return String(n).padStart(2, '0'); }
-  function dateToKey(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
-  function getActiveDateString() {
-    const now = new Date();
-    if (now.getHours() < 6) {
-      const d = new Date(now);
-      d.setDate(d.getDate() - 1);
-      return dateToKey(d);
-    }
-    return dateToKey(now);
-  }
-  function getTomorrowDateString() {
-    const now = new Date();
-    const d = new Date(now);
-    if (now.getHours() >= 6) d.setDate(d.getDate() + 1);
-    return dateToKey(d);
-  }
-  function formatDate(yyyy_mm_dd) {
-    const parts = yyyy_mm_dd.split('-').map(Number);
-    const d = new Date(parts[0], parts[1] - 1, parts[2]);
-    const wk = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
-    const mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
-    return wk + ', ' + mo + ' ' + d.getDate();
-  }
-
-  function todayKey()    { return 'goals:' + getActiveDateString(); }
-  function tomorrowKey() { return 'goals:' + getTomorrowDateString(); }
-
-  function getGoals(key) {
-    const g = storeGet(key);
-    return Array.isArray(g) ? g : [];
-  }
-  function setGoals(key, list) { storeSet(key, list); }
-
-  // ---------- rollover: pull undone older goals into today ----------
-  function rollover() {
-    const todayDateStr = getActiveDateString();
-    const todayK = 'goals:' + todayDateStr;
-    let today = getGoals(todayK);
-    const texts = new Set(today.map(g => g.text));
-
-    storeListKeys('goals:').forEach(k => {
-      const dateStr = k.slice('goals:'.length);
-      if (dateStr >= todayDateStr) return;
-      const old = getGoals(k);
-      old.forEach(g => {
-        if (!g.done && g.text && !texts.has(g.text)) {
-          today.push({ text: g.text, done: false });
-          texts.add(g.text);
-        }
-      });
-      storeDelete(k);
-    });
-    setGoals(todayK, today);
-  }
-
-  // ---------- streak ----------
-  function loadStreak() {
-    const s = storeGet('goal_streak_v1');
-    if (s && typeof s.count === 'number') return s;
-    return { count: 0, lastProcessedDate: '' };
-  }
-  function saveStreak(s) { storeSet('goal_streak_v1', s); }
-
-  function processStreak() {
-    const s = loadStreak();
-    const todayDateStr = getActiveDateString();
-    const keys = storeListKeys('goals:')
-      .map(k => k.slice('goals:'.length))
-      .filter(d => d < todayDateStr)
-      .sort();
-    keys.forEach(dateStr => {
-      if (s.lastProcessedDate && dateStr <= s.lastProcessedDate) return;
-      const list = getGoals('goals:' + dateStr);
-      if (list.length === 0) { /* don't break the streak on empty days */ }
-      else if (list.every(g => g.done)) s.count += 1;
-      else s.count = 0;
-      s.lastProcessedDate = dateStr;
-    });
-    saveStreak(s);
-  }
-
-  // ---------- Goal Ticker ----------
-  const tickerStage = document.getElementById('goalTickerStage');
-  const tickerMeta  = document.getElementById('goalTickerMeta');
-  let cycleIdx = 0;
-  let tickerTimer = null;
-
-  function buildTickerItems() {
-    const goals = getGoals(todayKey());
-    const total = goals.length;
-    const done  = goals.filter(g => g.done).length;
-    if (total === 0) return { items: [{ status: 'empty',   text: 'No goals set for today — add one to get rolling.' }], done, total };
-    if (done === total) return { items: [{ status: 'done', text: '✓ All goals done — solid day.' }], done, total };
-    const items = goals.filter(g => !g.done).map(g => ({ status: 'pending', text: g.text }));
-    return { items, done, total };
-  }
-
-  function statusGlyph(status) {
-    if (status === 'done') return '✓';
-    if (status === 'pending') return '○';
-    return '·';
-  }
-
-  let firstTick = true;
-  function tick() {
-    const { items, done, total } = buildTickerItems();
-    if (cycleIdx >= items.length) cycleIdx = 0;
-    const item = items[cycleIdx];
-    cycleIdx = (cycleIdx + 1) % items.length;
-
-    const oldRow = tickerStage.querySelector('.goal-ticker-row');
-    const newRow = document.createElement('div');
-    newRow.className = 'goal-ticker-row';
-    const status = document.createElement('span');
-    status.className = 'goal-ticker-status';
-    status.setAttribute('data-status', item.status);
-    status.textContent = statusGlyph(item.status);
-    const text = document.createElement('span');
-    text.className = 'goal-ticker-text';
-    text.textContent = item.text;
-    newRow.appendChild(status);
-    newRow.appendChild(text);
-
-    if (oldRow && !firstTick) {
-      oldRow.classList.add('is-leaving');
-      setTimeout(() => oldRow.remove(), 460);
-      newRow.classList.add('is-entering');
-    } else if (oldRow) {
-      oldRow.remove();
-    }
-    tickerStage.appendChild(newRow);
-    firstTick = false;
-
-    tickerMeta.textContent = done + '/' + total;
-  }
-
-  function startTicker() {
-    tick();
-    if (tickerTimer) clearInterval(tickerTimer);
-    tickerTimer = setInterval(tick, 5000);
-  }
-
-  window.addEventListener('goals-changed', () => {
-    cycleIdx = 0;
-    tick();
-  });
-
-  // ---------- Day Ring ----------
-  const PALETTE = [
-    [0,    [255, 216, 158]],
-    [12.5, [255, 205, 121]],
-    [25,   [255, 227, 143]],
-    [37.5, [255, 183, 106]],
-    [50,   [255, 149,  89]],
-    [62.5, [243, 111,  79]],
-    [75,   [226,  93, 122]],
-    [87.5, [123,  91, 176]],
-    [100,  [ 47,  58, 102]]
+  const all = [
+    ...hotLeads.map(l => ({ ...l, org: 'HOT lead', stage: 'HOT', lastContact: 1 })),
+    ...WARM_LEADS,
   ];
-  function lerp(a, b, t) { return a + (b - a) * t; }
-  function paletteAt(p) {
-    if (p <= PALETTE[0][0]) return PALETTE[0][1];
-    if (p >= PALETTE[PALETTE.length - 1][0]) return PALETTE[PALETTE.length - 1][1];
-    for (let i = 0; i < PALETTE.length - 1; i++) {
-      const [p0, c0] = PALETTE[i];
-      const [p1, c1] = PALETTE[i + 1];
-      if (p >= p0 && p <= p1) {
-        const t = (p - p0) / (p1 - p0);
-        return [lerp(c0[0], c1[0], t), lerp(c0[1], c1[1], t), lerp(c0[2], c1[2], t)];
-      }
+  const shown = filter === 'ALL' ? all : all.filter(l => l.stage === filter);
+
+  const handleRowClick = l => {
+    if (l.stage === 'HOT') {
+      const hl = matchHotLead(l.name);
+      if (hl) openModal({ type: 'lead', data: hl });
+    } else {
+      const wd = WARM_DETAIL_MAP[l.name];
+      if (wd) openModal({ type: 'warm', data: wd });
     }
-    return [255,255,255];
-  }
-  function rgb(c) { return 'rgb(' + Math.round(c[0]) + ',' + Math.round(c[1]) + ',' + Math.round(c[2]) + ')'; }
+  };
 
-  function formatClock(d) {
-    let h = d.getHours();
-    const m = d.getMinutes();
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    h = h % 12;
-    if (h === 0) h = 12;
-    return h + ':' + pad2(m) + ' ' + ampm;
-  }
-  function formatRemaining(totalMin) {
-    const h = Math.floor(totalMin / 60);
-    const m = Math.floor(totalMin % 60);
-    return h + 'h ' + m + 'm';
-  }
+  return (
+    <>
+      <div className="topbar">
+        <div>
+          <div className="crumb"><span>Workspace · Leads</span></div>
+          <h1 className="page-title">Leads</h1>
+          <div className="subtitle"><em>{hotLeads.length} HOT</em>, {WARM_LEADS.length} warm in pipeline.</div>
+        </div>
+        <div className="top-right"><Clock/><button className="new-btn">{I.plus()} New Lead</button></div>
+      </div>
 
-  const C = 2 * Math.PI * 52;
-  const fillEl = document.getElementById('dayRingFill');
-  fillEl.setAttribute('stroke-dasharray', C);
-  fillEl.setAttribute('stroke-dashoffset', C);
+      {error && <div className="err-banner">Vault fetch failed: {error}. Showing fallback data.</div>}
 
-  function updateDayRing() {
-    const now = new Date();
-    const hours = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
-    const percentEl   = document.getElementById('dayRingPercent');
-    const phaseEl     = document.getElementById('dayRingPhase');
-    const clockEl     = document.getElementById('dayRingClock');
-    const statusEl    = document.getElementById('dayRingStatus');
-    const remainingEl = document.getElementById('dayRingRemaining');
+      <div className="section-head">
+        <h2>Full Pipeline</h2>
+        <div className="filter-row">
+          {['ALL','HOT','WARM'].map(f => (
+            <button key={f} className={'pill ' + (filter === f ? 'on' : '')} onClick={() => setFilter(f)}>{f}</button>
+          ))}
+        </div>
+      </div>
 
-    clockEl.textContent = formatClock(now);
+      <div className="panel">
+        {loading && <div style={{ padding: '16px 18px', color: 'var(--ink-3)', fontSize: 13 }}>Loading leads from vault...</div>}
+        <div className="tbl-wrap">
+          <table className="ltbl">
+            <thead>
+              <tr>
+                <th>Lead</th>
+                <th>Stage</th>
+                <th>Value</th>
+                <th>Next Action</th>
+                <th>Last Contact</th>
+              </tr>
+            </thead>
+            <tbody>
+              {shown.map((l, i) => (
+                <tr key={i} onClick={() => handleRowClick(l)}>
+                  <td>
+                    <div className="tbl-name">{l.name}</div>
+                    {l.org && <div className="tbl-org">{l.org}</div>}
+                  </td>
+                  <td>
+                    {l.stage === 'HOT'
+                      ? <span className="badge-hot"><span className="ember"></span>HOT</span>
+                      : <span className="badge-warm">WARM</span>}
+                  </td>
+                  <td><span className="tbl-val">{l.value || fmtMoney(l.numValue)}</span></td>
+                  <td><span className="tbl-action">{l.action}</span></td>
+                  <td><span className="tbl-days">{l.lastContact}d ago</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
+  );
+}
 
-    if (hours < WAKE_HOUR) {
-      fillEl.setAttribute('stroke-dashoffset', C);
-      fillEl.style.stroke = '#4D4B47';
-      percentEl.textContent = '—';
-      phaseEl.textContent   = 'SLEEPING';
-      statusEl.textContent  = '😴 Still sleeping';
-      const minsUntil = (WAKE_HOUR - hours) * 60;
-      remainingEl.textContent = formatRemaining(minsUntil) + ' until wake-up';
-      return;
-    }
+/* ════════════════════════════════════════════
+   PAGE 3: Shoots
+════════════════════════════════════════════ */
+const SHOOTS_STATIC = [
+  { title: 'Creekside Amp',      where: 'Explore Harrison', date: 'Jun 5',  value: '--',     status: 'confirmed', tag: 'Brand film' },
+  { title: 'BeElite Basketball', where: 'Conway AR',        date: 'Jun 6',  value: '$1,750', status: 'confirmed', tag: 'Sports'     },
+  { title: 'Straight Up Gravel', where: 'NW Arkansas',      date: 'Jun 13', value: '$1,000', status: 'confirmed', tag: 'Event'      },
+  { title: 'Ozark BBQ Promo',    where: 'Harrison AR',      date: 'Jul 10', value: '--',     status: 'pending',   tag: 'Brand'      },
+];
 
-    if (hours >= SLEEP_HOUR) {
-      fillEl.setAttribute('stroke-dashoffset', 0);
-      fillEl.style.stroke = '#E25D7A';
-      percentEl.textContent = '100%';
-      phaseEl.textContent   = 'PAST BEDTIME';
-      statusEl.textContent  = '⚠️ Past bedtime';
-      remainingEl.textContent = 'Sleep!';
-      return;
-    }
+function ShootsPage({ openModal }) {
+  const { data: raw } = useVaultFile('hot.md');
+  const parsed = raw ? parseHot(raw) : null;
+  const shoots = parsed && parsed.shoots.length > 0
+    ? parsed.shoots.map(s => ({ title: s.job, where: '', date: s.date, value: s.value, status: 'confirmed', tag: 'Shoot' }))
+    : SHOOTS_STATIC;
 
-    const span = SLEEP_HOUR - WAKE_HOUR;
-    const percent = (hours - WAKE_HOUR) / span * 100;
-    fillEl.setAttribute('stroke-dashoffset', C * (1 - percent / 100));
-    fillEl.style.stroke = rgb(paletteAt(percent));
-    percentEl.textContent = Math.floor(percent) + '%';
+  const upcoming = shoots.filter(s => { const d = daysUntil(s.date); return d !== null && d >= 0; });
+  const past     = shoots.filter(s => { const d = daysUntil(s.date); return d !== null && d < 0; });
 
-    let phase, status;
-    if (percent < 25)      { phase = 'MORNING';   status = '☀️ Morning — fresh start'; }
-    else if (percent < 50) { phase = 'MIDDAY';    status = '⚡ Midday — keep moving'; }
-    else if (percent < 75) { phase = 'AFTERNOON'; status = '🔥 Afternoon — push it'; }
-    else if (percent < 90) { phase = 'EVENING';   status = '⏳ Evening — wrap up'; }
-    else                   { phase = 'BEDTIME';   status = '🌙 Bedtime soon'; }
-    phaseEl.textContent  = phase;
-    statusEl.textContent = status;
+  return (
+    <>
+      <div className="topbar">
+        <div>
+          <div className="crumb"><span>Workspace · Shoots</span></div>
+          <h1 className="page-title">Shoots</h1>
+          <div className="subtitle"><em>{upcoming.length} upcoming</em>{upcoming[0] ? ` -- next: ${upcoming[0].title}` : ''}.</div>
+        </div>
+        <div className="top-right"><Clock/></div>
+      </div>
 
-    const minsLeft = (SLEEP_HOUR - hours) * 60;
-    remainingEl.textContent = formatRemaining(minsLeft) + ' awake time left';
-  }
+      {upcoming.length > 0 && (
+        <>
+          <div className="sect-div">Upcoming</div>
+          <div className="shoots-pg-grid">
+            {upcoming.map((s, i) => {
+              const days = daysUntil(s.date);
+              const sd   = SHOOT_DETAIL[s.title];
+              return (
+                <div key={i} className="shoot-lg" onClick={() => { if (sd) openModal({ type: 'shoot', data: sd }); }}>
+                  <div className="sc-badge-pos">
+                    {s.status === 'confirmed' ? <span className="badge-ok">Confirmed</span> : <span className="badge-pending">Pending</span>}
+                  </div>
+                  <div className="cd-num">{days !== null ? String(days).padStart(2,'0') : '--'}</div>
+                  <div className="cd-lbl">DAYS OUT</div>
+                  <div className="sc-title">{s.title}</div>
+                  <div className="sc-where">{[s.where, s.date].filter(Boolean).join(' · ')}</div>
+                  <div className="sc-foot">
+                    <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, letterSpacing: '.14em', textTransform: 'uppercase' }}>{s.tag}</span>
+                    <span className="sc-val">{s.value || '--'}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
 
-  // ---------- Row building ----------
-  function makeInlineEdit(textEl, goals, idx, key, reload) {
-    textEl.addEventListener('click', () => {
-      if (textEl.getAttribute('contenteditable') === 'true') return;
-      const original = textEl.textContent;
-      textEl.setAttribute('contenteditable', 'true');
-      textEl.focus();
-      const range = document.createRange();
-      range.selectNodeContents(textEl);
-      range.collapse(false);
-      const sel = window.getSelection();
-      sel.removeAllRanges(); sel.addRange(range);
+      {past.length > 0 && (
+        <>
+          <div className="sect-div">Past</div>
+          <div className="shoots-pg-grid">
+            {past.map((s, i) => (
+              <div key={i} className="shoot-lg" style={{ opacity: .5 }}>
+                <div className="sc-badge-pos"><span className="badge-past">Completed</span></div>
+                <div className="cd-num" style={{ color: 'var(--ink-3)', fontSize: 32 }}>{I.cam()}</div>
+                <div className="sc-title">{s.title}</div>
+                <div className="sc-where">{[s.where, s.date].filter(Boolean).join(' · ')}</div>
+                <div className="sc-foot">
+                  <span>{s.tag}</span>
+                  <span className="sc-val">{s.value || '--'}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </>
+  );
+}
 
-      function commit() {
-        const next = textEl.textContent.trim();
-        textEl.removeAttribute('contenteditable');
-        if (next && next !== original) {
-          const list = getGoals(key);
-          if (list[idx]) { list[idx].text = next; setGoals(key, list); }
-          reload();
-        } else {
-          textEl.textContent = original;
-        }
-      }
-      function cancel() {
-        textEl.removeAttribute('contenteditable');
-        textEl.textContent = original;
-      }
-      textEl.addEventListener('blur', commit, { once: true });
-      textEl.addEventListener('keydown', function onKey(e) {
-        if (e.key === 'Enter') { e.preventDefault(); textEl.removeEventListener('keydown', onKey); textEl.blur(); }
-        else if (e.key === 'Escape') { e.preventDefault(); textEl.removeEventListener('keydown', onKey); cancel(); }
-      });
+/* ════════════════════════════════════════════
+   PAGE 4: Revenue
+════════════════════════════════════════════ */
+const REV_DETAIL = [
+  { month: 'May 2026', rows: [
+    { client: 'Explore Harrison / Creekside Amp', amount: 500,  status: 'collected',  date: 'May 10' },
+    { client: 'Ozark BBQ (retainer)',             amount: 300,  status: 'collected',  date: 'May 02' },
+  ]},
+  { month: 'Jun 2026', rows: [
+    { client: 'BeElite Basketball', amount: 1750, status: 'contracted', date: 'Jun 6'  },
+    { client: 'Straight Up Gravel', amount: 1000, status: 'contracted', date: 'Jun 13' },
+    { client: 'Donovan / HCR',      amount: 2500, status: 'contracted', date: 'TBD'    },
+    { client: 'Hotel Seville',      amount: 500,  status: 'contracted', date: 'TBD'    },
+    { client: 'Fade Factory',       amount: 500,  status: 'contracted', date: 'TBD'    },
+  ]},
+];
+
+function RevenuePage({ openModal }) {
+  const { data: raw } = useVaultFile('hot.md');
+  const parsed = raw ? parseHot(raw) : null;
+  const rev    = parsed ? parsed.revenue : FB.revenue;
+
+  return (
+    <>
+      <div className="topbar">
+        <div>
+          <div className="crumb"><span>Workspace · Revenue</span></div>
+          <h1 className="page-title">Revenue</h1>
+          <div className="subtitle">May goal: <em>{fmtMoney(rev.goal)}</em> -- {Math.round((rev.collected + rev.contracted) / rev.goal * 100)}% there.</div>
+        </div>
+        <div className="top-right"><Clock/></div>
+      </div>
+
+      <div className="panel" style={{ marginBottom: 22 }}>
+        <div className="panel-head"><h3>Monthly Progress -- May 2026</h3><span className="ph-meta">MTD</span></div>
+        <RevBar collected={rev.collected} contracted={rev.contracted} goal={rev.goal}/>
+      </div>
+
+      <div className="panel">
+        <div className="panel-head"><h3>Revenue Detail</h3><span className="ph-meta">All Jobs</span></div>
+        {REV_DETAIL.map(({ month, rows }) => (
+          <div key={month}>
+            <div className="rev-month-lbl">{month}</div>
+            <table className="rtbl">
+              <thead>
+                <tr><th>Client / Project</th><th>Amount</th><th>Status</th><th>Date</th></tr>
+              </thead>
+              <tbody>
+                {rows.map((r, i) => (
+                  <tr key={i} onClick={() => openModal({ type: 'revrow', data: r })}>
+                    <td style={{ fontWeight: 600 }}>{r.client}</td>
+                    <td><span className="tbl-val">{fmtMoney(r.amount)}</span></td>
+                    <td>
+                      {r.status === 'collected'
+                        ? <span className="badge-ok">Collected</span>
+                        : <span className="badge-pending">Contracted</span>}
+                    </td>
+                    <td style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'var(--ink-3)' }}>{r.date}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+/* ════════════════════════════════════════════
+   PAGE 5: Skills
+════════════════════════════════════════════ */
+const SKILLS = [
+  { icon: 'mail', title: 'Write Outreach Sequence', desc: 'Generate a Day 1-10 follow-up sequence for a new lead.',
+    prompt: `Write a 10-day outreach sequence for a new video production lead.
+
+Lead name: [NAME]
+Business type: [TYPE]
+Goal: [GOAL]
+
+Format each day as:
+Day X -- [Subject line]
+[2-3 sentence message body]
+
+Tone: professional but personal, not salesy. Focus on value and fit.` },
+
+  { icon: 'edit2', title: 'Generate Proposal', desc: 'Draft a scoped proposal for a client and project.',
+    prompt: `Write a video production proposal for the following:
+
+Client: [NAME / BUSINESS]
+Project type: [e.g. brand film, event coverage, social content]
+Budget range: [AMOUNT]
+Shoot date: [DATE or TBD]
+
+Include: project overview, deliverables, timeline, investment, and next steps.
+Keep it concise -- max 1 page equivalent.` },
+
+  { icon: 'cam', title: 'Write Pre-Shoot Brief', desc: 'Generate a pre-shoot brief to send the client before shoot day.',
+    prompt: `Write a pre-shoot brief for a video production shoot.
+
+Client: [NAME]
+Shoot date: [DATE]
+Location: [LOCATION]
+Type of shoot: [TYPE]
+Key shots needed: [LIST]
+
+Include: call time, what to bring/wear, what to expect, and day-of contact.` },
+
+  { icon: 'zap', title: 'Write Delivery Email', desc: 'Draft the final delivery email when sending finished footage.',
+    prompt: `Write a professional video delivery email.
+
+Client: [NAME]
+Project: [TITLE]
+Delivery method: [e.g. Frame.io link, Google Drive]
+Revision policy: [e.g. 1 round included]
+
+Tone: warm and confident. Include what was delivered, how to review, and next steps for revisions or final approval.` },
+
+  { icon: 'star', title: 'Score a Lead', desc: 'Evaluate a lead and score their fit, urgency, and budget.',
+    prompt: `Score this video production lead on a 1-10 scale across three dimensions.
+
+Lead name: [NAME]
+What they want: [DESCRIPTION]
+Budget signals: [WHAT THEY SAID OR IMPLIED]
+Timeline: [URGENT / FLEXIBLE / UNKNOWN]
+Referral source: [SOURCE]
+
+Score and explain: Fit, Urgency, Budget. Then give an overall recommendation: pursue aggressively / nurture / pass.` },
+
+  { icon: 'arrow', title: 'Draft Follow-Up', desc: 'Write a follow-up for a lead that has gone quiet.',
+    prompt: `Write a follow-up message to a lead that has gone quiet.
+
+Lead name: [NAME]
+Last contact: [DATE / ACTION]
+What was discussed: [SUMMARY]
+My ask: [WHAT I WANT THEM TO DO]
+
+Keep it short -- 3-4 sentences max. Friendly, not pushy. Give them an easy out if they are not interested.` },
+
+  { icon: 'edit2', title: 'Update Pipeline Note', desc: 'Generate a concise pipeline note to log in your vault.',
+    prompt: `Write a brief pipeline note to log in my Obsidian vault.
+
+Lead: [NAME]
+Date: [TODAY'S DATE]
+What happened: [SUMMARY OF INTERACTION]
+Next action: [WHAT I WILL DO NEXT]
+Stage: [HOT / WARM / COLD]
+
+Format as a short markdown note with frontmatter: date, stage, next_action, last_contact.` },
+
+  { icon: 'refresh', title: 'Run Vault Lint', desc: 'Audit your vault notes for missing fields or stale entries.',
+    prompt: `Audit my Bray Films Obsidian vault pipeline notes.
+
+For each note, check:
+- Are all frontmatter fields filled in? (stage, value, next_action, last_contact)
+- Is last_contact more than 14 days ago? Flag as STALE.
+- Is the next_action still relevant or does it need updating?
+
+Output a table with: Lead name | Missing fields | Stale? | Suggested next action.` },
+
+  { icon: 'zap', title: 'Run Lead Hunt', desc: 'Trigger automated lead discovery -- finds new businesses in Harrison AR that match your client profile.',
+    workflow: 'lead-hunt' },
+];
+
+function SkillsPage() {
+  const [modal, setModal]   = useState(null);
+  const [copied, setCopied] = useState(false);
+  const [running, setRunning] = useState({});
+  const [ran, setRan]         = useState({});
+
+  const openModal = s => { setModal(s); setCopied(false); };
+  const close     = () => setModal(null);
+  const copy      = () => {
+    navigator.clipboard.writeText(modal.prompt).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     });
-  }
+  };
 
-  function wireDragReorder(row, listEl, key, reload) {
-    row.setAttribute('draggable', 'true');
-    row.addEventListener('dragstart', (e) => {
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', row.dataset.idx);
-    });
-    row.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      row.classList.add('is-drag-over');
-    });
-    row.addEventListener('dragleave', () => row.classList.remove('is-drag-over'));
-    row.addEventListener('drop', (e) => {
-      e.preventDefault();
-      row.classList.remove('is-drag-over');
-      const from = parseInt(e.dataTransfer.getData('text/plain'), 10);
-      const to   = parseInt(row.dataset.idx, 10);
-      if (isNaN(from) || isNaN(to) || from === to) return;
-      const list = getGoals(key);
-      const [moved] = list.splice(from, 1);
-      list.splice(to, 0, moved);
-      setGoals(key, list);
-      reload();
-    });
-  }
-
-  function buildGoalRow(goal, idx, key, readOnly, reload) {
-    const li = document.createElement('li');
-    li.className = 'gm-row';
-    li.dataset.idx = String(idx);
-    if (goal.done) li.classList.add('gm-row-done');
-    if (goal.queued) li.classList.add('gm-row-queued');
-
-    const handle = document.createElement('span');
-    handle.className = 'gm-handle';
-    handle.textContent = '⋮⋮';
-    li.appendChild(handle);
-
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.className = 'gm-check';
-    cb.checked = !!goal.done;
-    if (readOnly) { cb.disabled = true; cb.title = 'Activates at 6 AM tomorrow'; }
-    cb.addEventListener('change', () => {
-      const list = getGoals(key);
-      if (!list[idx]) return;
-      list[idx].done = cb.checked;
-      if (cb.checked) list[idx].doneAt = Date.now();
-      else delete list[idx].doneAt;
-      setGoals(key, list);
-      reload();
-    });
-    li.appendChild(cb);
-
-    const text = document.createElement('span');
-    text.className = 'gm-text';
-    text.textContent = goal.text;
-    li.appendChild(text);
-    makeInlineEdit(text, null, idx, key, reload);
-
-    const queueBtn = document.createElement('button');
-    queueBtn.type = 'button';
-    queueBtn.className = 'gm-queue-btn' + (goal.queued ? ' gm-queue-active' : '');
-    queueBtn.textContent = '⚡';
-    queueBtn.title = 'Queue for productivity window';
-    if (readOnly) queueBtn.disabled = true;
-    queueBtn.addEventListener('click', () => {
-      const list = getGoals(key);
-      if (!list[idx]) return;
-      list[idx].queued = !list[idx].queued;
-      setGoals(key, list);
-      li.classList.add('is-queue-flashing');
-      setTimeout(reload, 480);
-    });
-    li.appendChild(queueBtn);
-
-    const del = document.createElement('button');
-    del.type = 'button';
-    del.className = 'goal-delete';
-    del.setAttribute('aria-label', 'Delete goal');
-    del.textContent = '×';
-    del.addEventListener('click', () => {
-      const list = getGoals(key);
-      list.splice(idx, 1);
-      setGoals(key, list);
-      reload();
-    });
-    li.appendChild(del);
-
-    wireDragReorder(li, null, key, reload);
-    return li;
-  }
-
-  // ---------- Renderers ----------
-  function renderTodayHeader() {
-    const goals = getGoals(todayKey());
-    const total = goals.length;
-    const done  = goals.filter(g => g.done).length;
-    document.getElementById('gmProgressNum').textContent   = done;
-    document.getElementById('gmProgressTotal').textContent = '/ ' + total;
-    const label = document.getElementById('gmProgressLabel');
-    if (total === 0)        label.textContent = 'no goals yet';
-    else if (done === total) label.textContent = 'all done — solid day';
-    else                     label.textContent = 'complete';
-
-    document.getElementById('todayLabel').textContent =
-      'Today — ' + formatDate(getActiveDateString());
-
-    const bar = document.getElementById('gmBar');
-    bar.innerHTML = '';
-    goals.forEach(g => {
-      const seg = document.createElement('div');
-      seg.className = 'gm-bar-seg' + (g.done ? ' gm-bar-seg-done' : '');
-      bar.appendChild(seg);
-    });
-
-    const card = document.getElementById('gmCardToday');
-    card.classList.toggle('gm-all-done', total > 0 && done === total);
-
-    const pushBtn = document.getElementById('gmPushBtn');
-    pushBtn.style.display = (total > 0 && done < total) ? 'block' : 'none';
-  }
-
-  function renderStreak() {
-    const s = loadStreak();
-    document.getElementById('gmStreakNum').textContent = s.count;
-    document.getElementById('gmStreak').classList.toggle('gm-streak-active', s.count > 0);
-  }
-
-  function renderTomorrowCount() {
-    const list = getGoals(tomorrowKey());
-    document.getElementById('gmTomorrowCount').textContent = list.length + ' planned';
-    document.getElementById('tomorrowLabel').textContent =
-      'Plan tomorrow — ' + formatDate(getTomorrowDateString());
-  }
-
-  function renderListInto(goals, listEl, emptyEl, key, readOnly) {
-    listEl.innerHTML = '';
-    emptyEl.style.display = goals.length === 0 ? 'block' : 'none';
-    const reload = () => (key === todayKey() ? loadToday() : loadTomorrow());
-
-    const visible = goals.length > 5 ? goals.slice(0, 5) : goals;
-    visible.forEach((g, i) => listEl.appendChild(buildGoalRow(g, i, key, readOnly, reload)));
-
-    if (goals.length > 5) {
-      let expanded = false;
-      const toggle = document.createElement('button');
-      toggle.type = 'button';
-      toggle.className = 'gm-show-toggle';
-      const updateLabel = () => {
-        toggle.textContent = expanded ? 'Show less ▴' : ('Show ' + (goals.length - 5) + ' more ▾');
-      };
-      updateLabel();
-      toggle.addEventListener('click', () => {
-        expanded = !expanded;
-        if (expanded) {
-          goals.slice(5).forEach((g, i) => {
-            const row = buildGoalRow(g, i + 5, key, readOnly, reload);
-            listEl.insertBefore(row, toggle);
-          });
-        } else {
-          Array.from(listEl.querySelectorAll('.gm-row')).slice(5).forEach(r => r.remove());
-        }
-        updateLabel();
-      });
-      listEl.appendChild(toggle);
-    }
-
-    if (key === todayKey()) renderTodayHeader();
-    else                    renderTomorrowCount();
-  }
-
-  function loadToday() {
-    const goals = getGoals(todayKey());
-    renderListInto(goals, document.getElementById('goalList'), document.getElementById('emptyState'), todayKey(), false);
-  }
-  function loadTomorrow() {
-    const goals = getGoals(tomorrowKey());
-    renderListInto(goals, document.getElementById('tomorrowList'), document.getElementById('tomorrowEmpty'), tomorrowKey(), true);
-  }
-
-  // ---------- Push remaining ----------
-  document.getElementById('gmPushBtn').addEventListener('click', () => {
-    const today    = getGoals(todayKey());
-    const remaining = today.filter(g => !g.done);
-    if (remaining.length === 0) return;
-    if (!confirm('Move ' + remaining.length + ' unchecked goal' + (remaining.length === 1 ? '' : 's') + ' to tomorrow?')) return;
-    const tomorrow = getGoals(tomorrowKey());
-    const seen = new Set(tomorrow.map(g => g.text));
-    remaining.forEach(g => {
-      if (!seen.has(g.text)) { tomorrow.push({ text: g.text, done: false }); seen.add(g.text); }
-    });
-    setGoals(tomorrowKey(), tomorrow);
-    setGoals(todayKey(), today.filter(g => g.done));
-    loadToday(); loadTomorrow();
-  });
-
-  // ---------- Add + Polish handlers ----------
-  function showStatus(el, message, isError) {
-    el.textContent = message;
-    el.classList.toggle('gm-status-error', !!isError);
-    clearTimeout(el._t);
-    el._t = setTimeout(() => { el.textContent = ''; el.classList.remove('gm-status-error'); }, 3500);
-  }
-
-  async function polishOne(text) {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-5',
-        max_tokens: 1000,
-        messages: [{
-          role: 'user',
-          content:
-            'Rewrite this single goal so it is concrete, action-oriented, and under 60 characters. ' +
-            'Return ONLY a JSON array with exactly one string, no preamble, no code fences.\n\nGoal: ' + text
-        }]
-      })
-    });
-    const data = await res.json();
-    const content = (data && data.content && data.content[0] && data.content[0].text) || '';
-    const arr = JSON.parse(content);
-    if (!Array.isArray(arr) || arr.length < 1 || typeof arr[0] !== 'string') throw new Error('bad response');
-    return arr[0].trim();
-  }
-
-  function makeAddHandlers(input, addBtn, polishBtn, key, statusEl, reload) {
-    function plainAdd(text) {
-      const list = getGoals(key);
-      list.push({ text, done: false });
-      setGoals(key, list);
-      input.value = '';
-      reload();
-    }
-    addBtn.addEventListener('click', () => {
-      const text = input.value.trim();
-      if (!text) return;
-      plainAdd(text);
-    });
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); addBtn.click(); }
-    });
-    polishBtn.addEventListener('click', async () => {
-      const text = input.value.trim();
-      if (!text) return;
-      if (!ANTHROPIC_API_KEY) {
-        plainAdd(text);
-        showStatus(statusEl, 'Polish needs an Anthropic API key — added as-typed.', false);
-        return;
-      }
-      polishBtn.disabled = true;
+  const handleCardClick = async (s, i) => {
+    if (s.workflow) {
+      if (running[i]) return;
+      setRunning(r => ({ ...r, [i]: true }));
       try {
-        const polished = await polishOne(text);
-        plainAdd(polished);
-      } catch (e) {
-        plainAdd(text);
-        showStatus(statusEl, 'Polish failed — added as-typed.', true);
-      } finally {
-        polishBtn.disabled = false;
-      }
-    });
-  }
+        await fetch('/api/trigger', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ workflow: s.workflow }),
+        });
+      } catch {}
+      setRunning(r => ({ ...r, [i]: false }));
+      setRan(r => ({ ...r, [i]: true }));
+      setTimeout(() => setRan(r => ({ ...r, [i]: false })), 3000);
+    } else {
+      openModal(s);
+    }
+  };
 
-  makeAddHandlers(
-    document.getElementById('goalInput'),
-    document.getElementById('goalAddBtn'),
-    document.getElementById('goalPolishBtn'),
-    todayKey(),
-    document.getElementById('polishStatus'),
-    loadToday
+  return (
+    <>
+      <div className="topbar">
+        <div>
+          <div className="crumb"><span>Workspace · Skills</span></div>
+          <h1 className="page-title">Skills</h1>
+          <div className="subtitle">AI prompt templates for Bray Films -- click any card to copy into Claude.</div>
+        </div>
+        <div className="top-right"><Clock/></div>
+      </div>
+
+      <div className="skills-grid">
+        {SKILLS.map((s, i) => (
+          <div key={i} className="skill-card" onClick={() => handleCardClick(s, i)}>
+            <div className="sk-icon">{I[s.icon]()}</div>
+            <div className="sk-title">{s.title}</div>
+            <div className="sk-desc">{s.desc}</div>
+            {s.workflow
+              ? <span className="sk-arrow" style={{ color: running[i] ? 'var(--gold)' : ran[i] ? 'var(--green)' : 'var(--ink-3)', fontSize: 11, letterSpacing: '.08em' }}>
+                  {running[i] ? 'Running...' : ran[i] ? 'Done!' : I.arrow()}
+                </span>
+              : <span className="sk-arrow">{I.chev()}</span>}
+          </div>
+        ))}
+      </div>
+
+      {modal && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && close()}>
+          <div className="modal">
+            <div className="modal-head">
+              <h3>{modal.title}</h3>
+              <div className="modal-close" onClick={close}>{I.x()}</div>
+            </div>
+            <div className="modal-body">
+              <div className="modal-prompt">{modal.prompt}</div>
+            </div>
+            <div className="modal-foot">
+              <button className="cancel-btn" onClick={close}>Close</button>
+              <button className="copy-btn" onClick={copy}>{I.copy()} {copied ? 'Copied!' : 'Copy Prompt'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
-  makeAddHandlers(
-    document.getElementById('tomorrowInput'),
-    document.getElementById('tomorrowAddBtn'),
-    document.getElementById('tomorrowPolishBtn'),
-    tomorrowKey(),
-    document.getElementById('tomorrowStatus'),
-    loadTomorrow
+}
+
+/* ════════════════════════════════════════════
+   Root App
+════════════════════════════════════════════ */
+function App() {
+  const [page, setPage]   = useState('dash');
+  const [modal, setModal] = useState(null);
+  const openModal  = data => setModal(data);
+  const closeModal = ()   => setModal(null);
+
+  const content = {
+    dash:    <DashPage    openModal={openModal}/>,
+    leads:   <LeadsPage   openModal={openModal}/>,
+    shoots:  <ShootsPage  openModal={openModal}/>,
+    revenue: <RevenuePage openModal={openModal}/>,
+    skills:  <SkillsPage/>,
+  }[page];
+
+  return (
+    <div className="app">
+      <Sidebar active={page} go={setPage}/>
+      <main>{content}</main>
+      <ModalManager modal={modal} onClose={closeModal}/>
+    </div>
   );
+}
 
-  // ---------- Boot ----------
-  rollover();
-  processStreak();
-  loadToday();
-  loadTomorrow();
-  renderStreak();
-  updateDayRing();
-  setInterval(updateDayRing, 60 * 1000);
-  startTicker();
-
-  // Re-render when storage changes from another tab (or our bridged parent).
-  window.addEventListener('storage', () => {
-    loadToday(); loadTomorrow(); renderStreak();
-  });
-})();
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
 </body>
 </html>
