@@ -1034,6 +1034,7 @@ const NAV = [
   { id: 'shoots',     label: 'Shoots',         icon: 'cam',    count: '4' },
   { id: 'revenue',    label: 'Revenue',        icon: 'dollar', count: '' },
   { id: 'skills',     label: 'Skills',         icon: 'award',  count: '' },
+  { id: 'calendar',   label: 'Calendar',       icon: 'cal',    count: '' },
 ];
 
 function Sidebar({ active, go, leadCount }) {
@@ -1069,8 +1070,7 @@ function Sidebar({ active, go, leadCount }) {
       </div>
       <div className="nav-section">
         <div className="nav-label">Tools</div>
-        <div className="nav-item"><span className="nav-ic">{I.cal()}</span><span>Calendar</span></div>
-        <div className="nav-item"><span className="nav-ic">{I.target()}</span><span>Goals</span></div>
+        {NAV.filter(n => n.id === 'calendar').map(navItem)}
       </div>
       <div className="sidebar-foot">
         <div className="profile-pill">
@@ -2519,6 +2519,150 @@ function PublishingPage() {
 }
 
 /* ════════════════════════════════════════════
+   PAGE 9: Calendar
+════════════════════════════════════════════ */
+function CalendarPage({ go }) {
+  const [shoots,   setShoots]  = useState([]);
+  const [loading,  setLoading] = useState(true);
+  const [view,     setView]    = useState(() => { const n = new Date(); return { year: n.getFullYear(), month: n.getMonth() }; });
+  const [selected, setSelected] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/calendar?days=120')
+      .then(r => r.ok ? r.json() : [])
+      .catch(() => [])
+      .then(data => { setShoots(data); setLoading(false); });
+  }, []);
+
+  useEffect(() => { setSelected(null); }, [view]);
+
+  const MONTHS   = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const DAY_HDRS = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const { year, month } = view;
+
+  const byDate = {};
+  shoots.forEach(s => { if (!byDate[s.date]) byDate[s.date] = []; byDate[s.date].push(s); });
+
+  const mkDate = (y, m, d) => `${y}-${String(m + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  const firstDow    = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const prevDays    = new Date(year, month, 0).getDate();
+  const todayStr    = new Date().toISOString().split('T')[0];
+
+  const cells = [];
+  for (let i = firstDow - 1; i >= 0; i--)
+    cells.push({ day: prevDays - i, dateStr: mkDate(month === 0 ? year - 1 : year, month === 0 ? 11 : month - 1, prevDays - i), outside: true });
+  for (let d = 1; d <= daysInMonth; d++)
+    cells.push({ day: d, dateStr: mkDate(year, month, d), outside: false });
+  const tail = (7 - (cells.length % 7)) % 7;
+  for (let d = 1; d <= tail; d++)
+    cells.push({ day: d, dateStr: mkDate(month === 11 ? year + 1 : year, month === 11 ? 0 : month + 1, d), outside: true });
+
+  const thisMonthShoots = shoots.filter(s => s.date.startsWith(`${year}-${String(month + 1).padStart(2,'0')}`));
+  const prevMonth = () => setView(({ year: y, month: m }) => m === 0 ? { year: y - 1, month: 11 } : { year: y, month: m - 1 });
+  const nextMonth = () => setView(({ year: y, month: m }) => m === 11 ? { year: y + 1, month: 0 } : { year: y, month: m + 1 });
+
+  return (
+    <>
+      <div className="topbar">
+        <div>
+          <div className="crumb"><span>Tools · Calendar</span></div>
+          <h1 className="page-title">Calendar</h1>
+          <div className="subtitle">
+            {loading ? '--' : <em>{thisMonthShoots.length} shoot{thisMonthShoots.length !== 1 ? 's' : ''}</em>} scheduled this month.
+          </div>
+        </div>
+        <div className="top-right"><Clock/></div>
+      </div>
+
+      {/* Month navigator */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
+        <button onClick={prevMonth} style={{ background: 'none', border: '1px solid var(--line)', color: 'var(--ink-2)', borderRadius: 6, padding: '4px 14px', cursor: 'pointer', fontSize: 18, lineHeight: 1 }}>&#8249;</button>
+        <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--gold)', minWidth: 150, textAlign: 'center', letterSpacing: '.06em' }}>
+          {MONTHS[month]} {year}
+        </span>
+        <button onClick={nextMonth} style={{ background: 'none', border: '1px solid var(--line)', color: 'var(--ink-2)', borderRadius: 6, padding: '4px 14px', cursor: 'pointer', fontSize: 18, lineHeight: 1 }}>&#8250;</button>
+      </div>
+
+      {/* Grid + optional detail panel */}
+      <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 260px' : '1fr', gap: 20, alignItems: 'start' }}>
+        <div>
+          {/* Day-of-week headers */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3, marginBottom: 3 }}>
+            {DAY_HDRS.map(d => (
+              <div key={d} style={{ textAlign: 'center', fontSize: 10, fontWeight: 600, letterSpacing: '.14em', color: 'var(--ink-3)', padding: '4px 0' }}>{d}</div>
+            ))}
+          </div>
+
+          {/* Day cells */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3 }}>
+            {cells.map((cell, i) => {
+              const cellShoots = byDate[cell.dateStr] || [];
+              const hasShoot   = cellShoots.length > 0 && !cell.outside;
+              const isToday    = cell.dateStr === todayStr;
+              return (
+                <div
+                  key={i}
+                  onClick={() => hasShoot && setSelected(cellShoots[0])}
+                  style={{
+                    background: hasShoot ? 'rgba(196,154,60,0.08)' : 'var(--card)',
+                    border: isToday ? '1px solid var(--gold)' : hasShoot ? '1px solid rgba(196,154,60,0.30)' : '1px solid var(--line)',
+                    borderRadius: 8, padding: '6px 7px', minHeight: 72,
+                    opacity: cell.outside ? 0.3 : 1,
+                    cursor: hasShoot ? 'pointer' : 'default',
+                    transition: 'border-color .15s',
+                  }}
+                >
+                  <div style={{ fontSize: 11, color: isToday ? 'var(--gold)' : 'var(--ink-3)', fontFamily: "'JetBrains Mono', monospace", marginBottom: 4, fontWeight: isToday ? 700 : 400 }}>
+                    {cell.day}
+                  </div>
+                  {cellShoots.map((s, j) => (
+                    <div key={j} style={{ background: 'rgba(196,154,60,0.15)', border: '1px solid rgba(196,154,60,0.35)', borderRadius: 4, padding: '2px 5px', fontSize: 9.5, fontWeight: 600, color: 'var(--gold)', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {s.title}
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Empty state */}
+          {!loading && thisMonthShoots.length === 0 && (
+            <div style={{ textAlign: 'center', color: 'var(--ink-2)', padding: '32px 0', fontSize: 13 }}>
+              {I.cal()} No shoots scheduled this month.
+            </div>
+          )}
+        </div>
+
+        {/* Detail panel */}
+        {selected && (
+          <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 8, padding: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <span style={{ fontSize: 10, letterSpacing: '.12em', color: 'var(--gold)', textTransform: 'uppercase', fontWeight: 700 }}>Shoot Detail</span>
+              <button onClick={() => setSelected(null)} style={{ background: 'none', border: 'none', color: 'var(--ink-3)', cursor: 'pointer', padding: 0, display: 'flex' }}>{I.x()}</button>
+            </div>
+            <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--ink)', marginBottom: 6 }}>{selected.title}</div>
+            <div style={{ fontSize: 12, color: 'var(--ink-2)', marginBottom: 2 }}>{selected.dateFormatted}</div>
+            <div style={{ fontSize: 11, color: selected.daysOut === 0 ? 'var(--gold)' : 'var(--ink-3)', marginBottom: 10, fontWeight: selected.daysOut === 0 ? 700 : 400 }}>
+              {selected.daysOut === 0 ? 'Today' : `${selected.daysOut} day${selected.daysOut !== 1 ? 's' : ''} out`}
+            </div>
+            {selected.location && <div style={{ fontSize: 12, color: 'var(--ink-2)', marginBottom: 6 }}>{selected.location}</div>}
+            {selected.value && <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 14, color: 'var(--gold)', fontWeight: 700, marginBottom: 10 }}>{selected.value}</div>}
+            {selected.description && <div style={{ fontSize: 12, color: 'var(--ink-2)', lineHeight: 1.6, marginBottom: 14 }}>{selected.description}</div>}
+            <button
+              onClick={() => go('shoots')}
+              style={{ background: 'none', border: '1px solid var(--line)', color: 'var(--ink-2)', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 12, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
+            >
+              View in Shoots {I.arrow({ width: 11, height: 11 })}
+            </button>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+/* ════════════════════════════════════════════
    Bottom Tab Bar (mobile only)
 ════════════════════════════════════════════ */
 const TAB_BAR = [
@@ -2565,6 +2709,7 @@ function App() {
     shoots:     <ShootsPage     openModal={openModal}/>,
     revenue:    <RevenuePage    openModal={openModal}/>,
     skills:     <SkillsPage/>,
+    calendar:   <CalendarPage   go={setPage}/>,
   }[page];
 
   return (

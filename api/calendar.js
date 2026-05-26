@@ -56,11 +56,14 @@ export default async function handler(req, res) {
     const { items = [] } = await calRes.json();
 
     // Step 3: Filter for shoot-related events
-    const SHOOT_KEYWORDS = ['shoot', 'film', 'video', 'creekside', 'beelite', 'gravel', 'brayfilms', 'explore harrison'];
+    // Title-first: generic keywords must appear in title; client-specific terms match anywhere
+    const TITLE_KEYWORDS = ['shoot', 'film', 'video', 'reel', 'bts', 'coverage', 'photography'];
+    const ANY_KEYWORDS   = ['creekside', 'beelite', 'be elite', 'gravel race', 'brayfilms', 'bray films', 'explore harrison'];
     const shoots = items
       .filter(e => {
-        const text = `${e.summary || ''} ${e.description || ''}`.toLowerCase();
-        return SHOOT_KEYWORDS.some(k => text.includes(k));
+        const title = (e.summary || '').toLowerCase();
+        const desc  = (e.description || '').toLowerCase();
+        return TITLE_KEYWORDS.some(k => title.includes(k)) || ANY_KEYWORDS.some(k => title.includes(k) || desc.includes(k));
       })
       .map(e => {
         const dateStr = e.start?.date || e.start?.dateTime?.split('T')[0] || '';
