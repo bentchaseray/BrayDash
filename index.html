@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Bray Films -- Studio OS</title>
+<title>Bray Films · Studio OS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
@@ -777,6 +777,57 @@ function parseHot(md) {
   return { top3, pipeline, shoots, revenue: { collected, contracted, goal } };
 }
 
+function generatedGreeting() {
+  const h = new Date().getHours();
+  const time = h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
+  const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const d = new Date();
+  return `Good ${time}, Bentley. Today is ${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}.`;
+}
+
+function parseChecklistFromHot(hotText) {
+  const section = hotText.match(/## Top 3 Right Now\n([\s\S]*?)(?=\n##|$)/);
+  if (!section) return null;
+  const items = section[1]
+    .split('\n')
+    .filter(l => /^\d+\./.test(l.trim()))
+    .map((line, i) => {
+      const text = line.replace(/^\d+\.\s*/, '').trim();
+      let category = 'PRIORITY';
+      if (/URGENT|before May|before Jun|days away/i.test(text)) category = 'URGENT';
+      else if (/DM|outreach|send|day 1/i.test(text))           category = 'OUTREACH';
+      else if (/call|walk in|follow|text/i.test(text))          category = 'FOLLOW-UP';
+      else if (/content|post|reel|story/i.test(text))           category = 'CONTENT';
+      else if (/airtable|scout|pipeline|check/i.test(text))     category = 'PIPELINE';
+      return { id: `hot-${i}`, category, text, meta: '' };
+    });
+  return items.length > 0 ? items : null;
+}
+
+function parseWarmFromHot(hotText) {
+  if (!hotText) return null;
+  const lines = hotText.split('\n');
+  const rows = []; let inSec = false, pastDiv = false;
+  for (const l of lines) {
+    if (/^##\s+WARM\s+(Pipeline|Leads?)/i.test(l)) { inSec = true; pastDiv = false; continue; }
+    if (inSec && /^##\s/.test(l)) { inSec = false; continue; }
+    if (!inSec) continue;
+    if (/^\|[-:\s|]+\|/.test(l)) { pastDiv = true; continue; }
+    if (pastDiv && l.trim().startsWith('|')) {
+      const cells = l.split('|').map(c => c.trim()).filter((_, i, a) => i > 0 && i < a.length - 1);
+      if (cells.length >= 1 && cells[0]) rows.push(cells);
+    }
+  }
+  if (!rows.length) return null;
+  return rows.map(([name, sub]) => ({
+    name: name || '',
+    sub:  sub  || '',
+    init: (name || '').split(/\s+/).map(w => w[0] || '').slice(0, 2).join('').toUpperCase(),
+    heat: 0.5,
+  }));
+}
+
 /* ═══ Helpers ═══ */
 function daysUntil(dateStr) {
   const clean = dateStr.replace(/\s*[--].*/, '').trim();
@@ -794,7 +845,7 @@ const FB = {
   top3: [
     'Send Donovan / HCR the revised brand-film quote',
     'Call Hotel Seville before May 28',
-    'Edit Creekside Amp pitch deck -- final pass',
+    'Edit Creekside Amp pitch deck · final pass',
   ],
   pipeline: [
     { name: 'Donovan Fiore',       action: 'Awaiting reply',            value: '$2,500', numValue: 2500 },
@@ -923,7 +974,7 @@ const SHOOT_DETAIL = {
     title: 'Straight Up Gravel', client: 'Event client',
     date: 'Jun 13, 2026', location: 'NW Arkansas',
     value: '$1,200', netValue: '$1,000 net',
-    contractor: 'Billy Barrett -- drone -- $200',
+    contractor: 'Billy Barrett · drone · $200',
     notes: 'Event coverage. Billy Barrett handling drone footage. Contractor cost: $200. Net to Bray Films: $1,000.',
     prep: [
       'Confirm Billy Barrett availability and drone plan',
@@ -977,7 +1028,7 @@ const I = {
 /* ═══ Sidebar ═══ */
 const NAV = [
   { id: 'dash',       label: 'Command Center', icon: 'grid',   count: '' },
-  { id: 'leads',      label: 'Leads',          icon: 'flame',  count: '7' },
+  { id: 'leads',      label: 'Leads',          icon: 'flame',  count: '' },
   { id: 'meta',       label: 'Meta Ads',       icon: 'spark',  count: '' },
   { id: 'publishing', label: 'Publishing',     icon: 'cal',    count: '6' },
   { id: 'shoots',     label: 'Shoots',         icon: 'cam',    count: '4' },
@@ -985,14 +1036,17 @@ const NAV = [
   { id: 'skills',     label: 'Skills',         icon: 'award',  count: '' },
 ];
 
-function Sidebar({ active, go }) {
-  const navItem = n => (
-    <div key={n.id} className={'nav-item ' + (active === n.id ? 'active' : '')} onClick={() => go(n.id)}>
-      <span className="nav-ic">{I[n.icon]()}</span>
-      <span>{n.label}</span>
-      {n.count && <span className="nav-count">{n.count}</span>}
-    </div>
-  );
+function Sidebar({ active, go, leadCount }) {
+  const navItem = n => {
+    const badge = n.id === 'leads' ? leadCount : n.count;
+    return (
+      <div key={n.id} className={'nav-item ' + (active === n.id ? 'active' : '')} onClick={() => go(n.id)}>
+        <span className="nav-ic">{I[n.icon]()}</span>
+        <span>{n.label}</span>
+        {badge != null && badge !== '' && <span className="nav-count">{badge}</span>}
+      </div>
+    );
+  };
   const ws  = NAV.filter(n => ['dash','leads'].includes(n.id));
   const mkt = NAV.filter(n => ['meta','publishing'].includes(n.id));
   const biz = NAV.filter(n => ['shoots','revenue','skills'].includes(n.id));
@@ -1237,7 +1291,7 @@ function WarmModal({ lead, onClose }) {
 function StatModal({ statKey, onClose }) {
   if (statKey === 'collected') {
     return (
-      <BaseModal onClose={onClose} title="Revenue Collected -- May 2026" foot={<button className="cancel-btn" onClick={onClose}>Close</button>}>
+      <BaseModal onClose={onClose} title="Revenue Collected · May 2026" foot={<button className="cancel-btn" onClick={onClose}>Close</button>}>
         <div className="modal-section-label">Breakdown</div>
         <div className="drill-rows">
           <div className="drill-row">
@@ -1283,19 +1337,19 @@ function StatModal({ statKey, onClose }) {
 
   if (statKey === 'goal') {
     return (
-      <BaseModal onClose={onClose} title="Monthly Goal -- May 2026" foot={<button className="cancel-btn" onClick={onClose}>Close</button>}>
+      <BaseModal onClose={onClose} title="Monthly Goal · May 2026" foot={<button className="cancel-btn" onClick={onClose}>Close</button>}>
         <div className="modal-section-label">Committed Revenue</div>
         <div className="drill-rows">
           <div className="drill-row">
-            <div className="drill-row-label">Collected -- May</div>
+            <div className="drill-row-label">Collected · May</div>
             <div className="drill-row-val">$800</div>
           </div>
           <div className="drill-row">
-            <div><div className="drill-row-label">Contracted -- Straight Up Gravel</div></div>
+            <div><div className="drill-row-label">Contracted · Straight Up Gravel</div></div>
             <div className="drill-row-val">$1,200</div>
           </div>
           <div className="drill-row">
-            <div><div className="drill-row-label">Contracted -- BeElite Basketball</div></div>
+            <div><div className="drill-row-label">Contracted · BeElite Basketball</div></div>
             <div className="drill-row-val">$1,750</div>
           </div>
         </div>
@@ -1338,7 +1392,7 @@ function ShootModal({ shoot, onClose }) {
   return (
     <BaseModal onClose={onClose} title={shoot.title} foot={<button className="cancel-btn" onClick={onClose}>Close</button>}>
       <div style={{ marginBottom: 14 }}>
-        <div className="via-line"><b>{shoot.date}</b> -- {shoot.location}</div>
+        <div className="via-line"><b>{shoot.date}</b> · {shoot.location}</div>
         <div className="via-line">Client: <b>{shoot.client}</b></div>
       </div>
 
@@ -1380,7 +1434,7 @@ function ShootModal({ shoot, onClose }) {
 }
 
 function RevRowModal({ row, onClose }) {
-  const invoiceNote = `${row.client} -- ${fmtMoney(row.amount)} -- ${row.status} -- ${row.date}`;
+  const invoiceNote = `${row.client} · ${fmtMoney(row.amount)} · ${row.status} · ${row.date}`;
   return (
     <BaseModal
       onClose={onClose}
@@ -1418,11 +1472,12 @@ function ModalManager({ modal, onClose }) {
 /* ════════════════════════════════════════════
    DAILY CHECKLIST DATA
 ════════════════════════════════════════════ */
+// FALLBACK — used only when hot.md Top 3 cannot be parsed
 const DAILY_CHECKLIST = [
-  { id: 'c1', category: 'URGENT',    text: 'Call Hotel Seville owner -- visit before May 28', meta: 'Matt Bell referral · $500' },
+  { id: 'c1', category: 'URGENT',    text: 'Call Hotel Seville owner · visit before May 28', meta: 'Matt Bell referral · $500' },
   { id: 'c2', category: 'OUTREACH',  text: 'Send Day 1 DM to Cliff House Inn',                meta: 'Toinette Madison referral · no outreach sent yet' },
   { id: 'c3', category: 'OUTREACH',  text: 'Send Day 1 DM to Low Gap Cafe',                  meta: 'Toinette Madison referral · no outreach sent yet' },
-  { id: 'c4', category: 'FOLLOW-UP', text: 'Fade Factory -- call or walk in',                 meta: '13 days since first text · Ray Ray wants to buy' },
+  { id: 'c4', category: 'FOLLOW-UP', text: 'Fade Factory · call or walk in',                  meta: '13 days since first text · Ray Ray wants to buy' },
   { id: 'c5', category: 'CONTENT',   text: 'Post one piece of content today',                 meta: 'Stories, Reel, or BTS clip · consistency builds pipeline' },
   { id: 'c6', category: 'PIPELINE',  text: 'Check Airtable for new leads from Scout',        meta: 'n8n runs Monday 7am · review and score new entries' },
 ];
@@ -1442,10 +1497,10 @@ function WelcomeStrip({ done, remaining }) {
   );
 }
 
-function DailyChecklist({ checks, onToggle, onReset }) {
-  const total   = DAILY_CHECKLIST.length;
-  const done    = DAILY_CHECKLIST.filter(c => checks[c.id]).length;
-  const allDone = done === total;
+function DailyChecklist({ items, checks, onToggle, onReset }) {
+  const total   = items.length;
+  const done    = items.filter(c => checks[c.id]).length;
+  const allDone = done === total && total > 0;
   return (
     <div className="panel" style={allDone ? { boxShadow: '0 0 0 1px rgba(196,154,60,.45), 0 12px 30px rgba(196,154,60,.08), 0 2px 8px rgba(0,0,0,.25)' } : {}}>
       <div className="panel-head">
@@ -1460,17 +1515,17 @@ function DailyChecklist({ checks, onToggle, onReset }) {
       </div>
       <div className="dc-progress-wrap">
         <div className="dc-progress-label"><span>Progress</span><span>{done} / {total} complete</span></div>
-        <div className="dc-progress-bar"><div className="dc-progress-fill" style={{ width: `${done / total * 100}%` }}></div></div>
+        <div className="dc-progress-bar"><div className="dc-progress-fill" style={{ width: total > 0 ? `${done / total * 100}%` : '0%' }}></div></div>
       </div>
       <div className="dc-list">
-        {DAILY_CHECKLIST.map(c => (
+        {items.map(c => (
           <div key={c.id} className={'dc-row ' + (checks[c.id] ? 'done' : '')} onClick={() => onToggle(c.id)}>
             <div className="dc-chk">{checks[c.id] && I.check()}</div>
             <div className="dc-body">
               <div className="dc-text">{c.text}</div>
-              <div className="dc-meta">{c.meta}</div>
+              {c.meta && <div className="dc-meta">{c.meta}</div>}
             </div>
-            <span className={`cat-badge cat-${c.category.toLowerCase()}`}>{c.category}</span>
+            <span className={`cat-badge cat-${c.category.toLowerCase().replace(/\s+/g, '-')}`}>{c.category}</span>
           </div>
         ))}
       </div>
@@ -1481,6 +1536,7 @@ function DailyChecklist({ checks, onToggle, onReset }) {
 /* ════════════════════════════════════════════
    PAGE 1: Command Center
 ════════════════════════════════════════════ */
+// FALLBACK — update via hot.md WARM Pipeline section
 const WARM_PIPELINE = [
   { name: 'Ozark BBQ',       sub: 'Brand film · referral',  init: 'OB', heat: .55 },
   { name: 'Cliff House Inn', sub: 'Hospitality reel',        init: 'CH', heat: .70 },
@@ -1500,11 +1556,38 @@ function DashPage({ openModal }) {
   const [done, setDone] = useState({});
   const toggle = i => setDone(s => ({ ...s, [i]: !s[i] }));
 
+  // Daily Checklist: live from hot.md Top 3, fallback to DAILY_CHECKLIST
+  const [checklistItems, setChecklistItems] = useState(DAILY_CHECKLIST);
+  useEffect(() => {
+    if (raw) {
+      const live = parseChecklistFromHot(raw);
+      if (live) setChecklistItems(live);
+    }
+  }, [raw]);
+
   const [clChecks, setClChecks] = useState({});
   const clToggle = id => setClChecks(s => ({ ...s, [id]: !s[id] }));
   const clReset  = () => setClChecks({});
-  const clDone = DAILY_CHECKLIST.filter(c => clChecks[c.id]).length;
-  const clRem  = DAILY_CHECKLIST.length - clDone;
+  const clDone = checklistItems.filter(c => clChecks[c.id]).length;
+  const clRem  = checklistItems.length - clDone;
+
+  // Warm Pipeline: live from hot.md WARM section, fallback to constant
+  const warmPipeline = raw ? (parseWarmFromHot(raw) || WARM_PIPELINE) : WARM_PIPELINE;
+
+  // Expandable briefing strip
+  const [briefingData, setBriefingData] = useState(null);
+  const [briefingOpen, setBriefingOpen] = useState(false);
+  useEffect(() => {
+    fetch('/api/vault?file=' + encodeURIComponent('daily/briefing.md'))
+      .then(r => r.ok ? r.text() : null)
+      .catch(() => null)
+      .then(text => {
+        if (text) {
+          const lines = text.trim().split('\n').filter(l => l.trim());
+          setBriefingData({ greeting: lines[0] || '', full: text.trim() });
+        }
+      });
+  }, []);
 
   return (
     <>
@@ -1515,7 +1598,6 @@ function DashPage({ openModal }) {
             <span className="live-badge"><span className="pulse"></span>LIVE</span>
           </div>
           <h1 className="page-title">Command Center</h1>
-          <div className="subtitle">Good morning, <em>Bentley</em> -- here's your business at a glance.</div>
         </div>
         <div className="top-right">
           <Clock/>
@@ -1532,7 +1614,7 @@ function DashPage({ openModal }) {
       <div className="stat-grid">
         <div className="stat s-green" onClick={() => openModal({ type: 'stat', data: 'collected' })}>
           <div className="stat-row1">
-            <div><div className="stat-label">Revenue Collected -- May</div><div className="stat-value">{fmtMoney(d.revenue.collected)}</div></div>
+            <div><div className="stat-label">Revenue Collected · May</div><div className="stat-value">{fmtMoney(d.revenue.collected)}</div></div>
             <div className="stat-badge">{I.dollar()}</div>
           </div>
           <div className="stat-delta d-green">{I.trendUp({ style: { color: 'var(--green)' } })} <b>{fmtMoney(d.revenue.collected)}</b> collected this month</div>
@@ -1544,7 +1626,7 @@ function DashPage({ openModal }) {
             <div><div className="stat-label">Pipeline Value</div><div className="stat-value">{fmtMoney(pipeVal)}</div></div>
             <div className="stat-badge">{I.flame()}</div>
           </div>
-          <div className="stat-delta d-blue"><b>{d.pipeline.length} active leads</b> -- all HOT</div>
+          <div className="stat-delta d-blue"><b>{d.pipeline.length} active leads</b> · all HOT</div>
           <Spark pts={[18,22,20,28,26,30,34,32,38]} color="#60a5fa"/>
         </div>
 
@@ -1570,7 +1652,31 @@ function DashPage({ openModal }) {
         </div>
       </div>
 
-      <WelcomeStrip done={clDone} remaining={clRem}/>
+      {/* Expandable briefing strip */}
+      <div
+        onClick={() => setBriefingOpen(o => !o)}
+        style={{
+          background: 'var(--card)', borderLeft: '3px solid var(--gold)', borderRadius: '8px',
+          padding: '12px 16px', cursor: 'pointer', display: 'flex',
+          justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'
+        }}
+      >
+        <span style={{ fontStyle: 'italic', color: 'var(--ink-2)', fontSize: '0.9rem' }}>
+          {briefingData?.greeting || generatedGreeting()}
+        </span>
+        <span style={{ color: 'var(--gold)', fontSize: '0.75rem', marginLeft: '12px', flexShrink: 0 }}>
+          {briefingOpen ? '▲ Close' : '▼ Full briefing'}
+        </span>
+      </div>
+      {briefingOpen && briefingData && (
+        <div style={{
+          background: 'var(--card)', borderRadius: '8px', padding: '16px 20px', marginBottom: '16px',
+          borderLeft: '3px solid var(--gold)', whiteSpace: 'pre-wrap',
+          fontFamily: "'JetBrains Mono', monospace", fontSize: '0.82rem', lineHeight: '1.7', color: 'var(--ink-2)'
+        }}>
+          {briefingData.full}
+        </div>
+      )}
 
       {/* Body */}
       <div className="body-grid">
@@ -1601,7 +1707,7 @@ function DashPage({ openModal }) {
             </div>
           </div>
 
-          <DailyChecklist checks={clChecks} onToggle={clToggle} onReset={clReset}/>
+          <DailyChecklist items={checklistItems} checks={clChecks} onToggle={clToggle} onReset={clReset}/>
 
           {/* Shoots */}
           <div className="panel">
@@ -1647,18 +1753,18 @@ function DashPage({ openModal }) {
 
           {/* Revenue */}
           <div className="panel">
-            <div className="panel-head"><h3>Revenue -- May 2026</h3><span className="ph-meta">MTD</span></div>
+            <div className="panel-head"><h3>Revenue · May 2026</h3><span className="ph-meta">MTD</span></div>
             <RevBar collected={d.revenue.collected} contracted={d.revenue.contracted} goal={d.revenue.goal}/>
           </div>
 
-          {/* Warm pipeline */}
+          {/* Warm pipeline — live from hot.md WARM section */}
           <div className="panel">
             <div className="panel-head">
               <h3>Warm Pipeline</h3>
               <span className="ph-link">{I.plus({ width: 12, height: 12 })} Add</span>
             </div>
             <div className="warm-list">
-              {WARM_PIPELINE.map((wr, i) => {
+              {warmPipeline.map((wr, i) => {
                 const wd = WARM_DETAIL_MAP[wr.name];
                 return (
                   <div key={i} className="warm-row" onClick={() => { if (wd) openModal({ type: 'warm', data: wd }); }}>
@@ -1680,6 +1786,7 @@ function DashPage({ openModal }) {
 /* ════════════════════════════════════════════
    PAGE 2: Leads
 ════════════════════════════════════════════ */
+// FALLBACK — update via Airtable leads sync or hot.md
 const WARM_LEADS = [
   { name: 'Ozark BBQ',       org: 'Local restaurant',  numValue: 1500, stage: 'WARM', action: 'Follow up after June shoots', lastContact: 7  },
   { name: 'Cliff House Inn', org: 'Hospitality',        numValue: 2000, stage: 'WARM', action: 'Send portfolio reel',          lastContact: 12 },
@@ -1771,6 +1878,7 @@ function LeadsPage({ openModal }) {
 /* ════════════════════════════════════════════
    PAGE 3: Shoots
 ════════════════════════════════════════════ */
+// FALLBACK — update via Google Calendar API (api/calendar.js) or edit directly
 const SHOOTS_STATIC = [
   { title: 'Creekside Amp',      where: 'Explore Harrison', date: 'Jun 5',  value: '--',     status: 'confirmed', tag: 'Brand film' },
   { title: 'BeElite Basketball', where: 'Conway AR',        date: 'Jun 6',  value: '$1,750', status: 'confirmed', tag: 'Sports'     },
@@ -1794,7 +1902,7 @@ function ShootsPage({ openModal }) {
         <div>
           <div className="crumb"><span>Workspace · Shoots</span></div>
           <h1 className="page-title">Shoots</h1>
-          <div className="subtitle"><em>{upcoming.length} upcoming</em>{upcoming[0] ? ` -- next: ${upcoming[0].title}` : ''}.</div>
+          <div className="subtitle"><em>{upcoming.length} upcoming</em>{upcoming[0] ? ` · next: ${upcoming[0].title}` : ''}.</div>
         </div>
         <div className="top-right"><Clock/></div>
       </div>
@@ -1852,6 +1960,7 @@ function ShootsPage({ openModal }) {
 /* ════════════════════════════════════════════
    PAGE 4: Revenue
 ════════════════════════════════════════════ */
+// FALLBACK — update as jobs are invoiced and collected
 const REV_DETAIL = [
   { month: 'May 2026', rows: [
     { client: 'Explore Harrison / Creekside Amp', amount: 500,  status: 'collected',  date: 'May 10' },
@@ -1877,13 +1986,13 @@ function RevenuePage({ openModal }) {
         <div>
           <div className="crumb"><span>Workspace · Revenue</span></div>
           <h1 className="page-title">Revenue</h1>
-          <div className="subtitle">May goal: <em>{fmtMoney(rev.goal)}</em> -- {Math.round((rev.collected + rev.contracted) / rev.goal * 100)}% there.</div>
+          <div className="subtitle">May goal: <em>{fmtMoney(rev.goal)}</em> · {Math.round((rev.collected + rev.contracted) / rev.goal * 100)}% there.</div>
         </div>
         <div className="top-right"><Clock/></div>
       </div>
 
       <div className="panel" style={{ marginBottom: 22 }}>
-        <div className="panel-head"><h3>Monthly Progress -- May 2026</h3><span className="ph-meta">MTD</span></div>
+        <div className="panel-head"><h3>Monthly Progress · May 2026</h3><span className="ph-meta">MTD</span></div>
         <RevBar collected={rev.collected} contracted={rev.contracted} goal={rev.goal}/>
       </div>
 
@@ -2009,8 +2118,10 @@ For each note, check:
 
 Output a table with: Lead name | Missing fields | Stale? | Suggested next action.` },
 
-  { icon: 'zap', title: 'Run Lead Hunt', desc: 'Trigger automated lead discovery -- finds new businesses in Harrison AR that match your client profile.',
+  { icon: 'zap', title: 'Run Lead Hunt', desc: 'Trigger automated lead discovery · finds new businesses in Harrison AR that match your client profile.',
     workflow: 'lead-hunt' },
+  { icon: 'search', title: 'Run Lead Research', desc: 'Research a specific business before outreach · generates a briefing note with context, contact info, and suggested angle.',
+    workflow: 'lead-research' },
 ];
 
 function SkillsPage() {
@@ -2018,6 +2129,9 @@ function SkillsPage() {
   const [copied, setCopied] = useState(false);
   const [running, setRunning] = useState({});
   const [ran, setRan]         = useState({});
+  const [researchOpen,   setResearchOpen]   = useState(false);
+  const [researchBiz,    setResearchBiz]    = useState('');
+  const [researchStatus, setResearchStatus] = useState(null); // null | 'running' | 'done' | 'error'
 
   const openModal = s => { setModal(s); setCopied(false); };
   const close     = () => setModal(null);
@@ -2028,7 +2142,28 @@ function SkillsPage() {
     });
   };
 
+  const runLeadResearch = async (biz) => {
+    if (!biz.trim() || researchStatus === 'running') return;
+    setResearchStatus('running');
+    try {
+      await fetch('/api/trigger', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workflow: 'lead-research', payload: { businessName: biz.trim() } }),
+      });
+      setResearchStatus('done');
+      setTimeout(() => { setResearchStatus(null); setResearchOpen(false); setResearchBiz(''); }, 3000);
+    } catch {
+      setResearchStatus('error');
+      setTimeout(() => setResearchStatus(null), 3000);
+    }
+  };
+
   const handleCardClick = async (s, i) => {
+    if (s.workflow === 'lead-research') {
+      setResearchOpen(o => !o);
+      return;
+    }
     if (s.workflow) {
       if (running[i]) return;
       setRunning(r => ({ ...r, [i]: true }));
@@ -2053,7 +2188,7 @@ function SkillsPage() {
         <div>
           <div className="crumb"><span>Workspace · Skills</span></div>
           <h1 className="page-title">Skills</h1>
-          <div className="subtitle">AI prompt templates for Bray Films -- click any card to copy into Claude.</div>
+          <div className="subtitle">AI prompt templates for Bray Films. Click any card to copy into Claude.</div>
         </div>
         <div className="top-right"><Clock/></div>
       </div>
@@ -2064,11 +2199,33 @@ function SkillsPage() {
             <div className="sk-icon">{I[s.icon]()}</div>
             <div className="sk-title">{s.title}</div>
             <div className="sk-desc">{s.desc}</div>
-            {s.workflow
-              ? <span className="sk-arrow" style={{ color: running[i] ? 'var(--gold)' : ran[i] ? 'var(--green)' : 'var(--ink-3)', fontSize: 11, letterSpacing: '.08em' }}>
-                  {running[i] ? 'Running...' : ran[i] ? 'Done!' : I.arrow()}
-                </span>
-              : <span className="sk-arrow">{I.chev()}</span>}
+            {s.workflow === 'lead-research'
+              ? researchOpen
+                ? <div onClick={e => e.stopPropagation()} style={{ marginTop: 10 }}>
+                    <input
+                      type="text"
+                      value={researchBiz}
+                      onChange={e => setResearchBiz(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && runLeadResearch(researchBiz)}
+                      placeholder="Business name..."
+                      style={{ width: '100%', padding: '6px 10px', borderRadius: 6, border: '1px solid var(--line)', background: 'var(--bg)', color: 'var(--ink)', fontSize: 13, marginBottom: 8, boxSizing: 'border-box' }}
+                    />
+                    <button
+                      onClick={() => runLeadResearch(researchBiz)}
+                      disabled={!researchBiz.trim() || researchStatus === 'running'}
+                      style={{ width: '100%', padding: '7px 0', borderRadius: 6, border: 'none', background: 'var(--gold)', color: '#000', fontSize: 12, fontWeight: 700, cursor: 'pointer', letterSpacing: '.08em', opacity: !researchBiz.trim() ? 0.5 : 1 }}
+                    >
+                      {researchStatus === 'running' ? 'Running...' : researchStatus === 'done' ? 'Done!' : researchStatus === 'error' ? 'Error — retry' : 'Research'}
+                    </button>
+                  </div>
+                : <span className="sk-arrow" style={{ color: researchStatus === 'done' ? 'var(--green)' : 'var(--ink-3)', fontSize: 11, letterSpacing: '.08em' }}>
+                    {researchStatus === 'done' ? 'Done!' : I.arrow()}
+                  </span>
+              : s.workflow
+                ? <span className="sk-arrow" style={{ color: running[i] ? 'var(--gold)' : ran[i] ? 'var(--green)' : 'var(--ink-3)', fontSize: 11, letterSpacing: '.08em' }}>
+                    {running[i] ? 'Running...' : ran[i] ? 'Done!' : I.arrow()}
+                  </span>
+                : <span className="sk-arrow">{I.chev()}</span>}
           </div>
         ))}
       </div>
@@ -2136,7 +2293,7 @@ function MetaAdsPage() {
           <div className="meta-connect-title">Connect Meta Ads Manager</div>
           <div className="meta-connect-sub">Link your ad account to pull live spend, CPL, and ROAS automatically.</div>
         </div>
-        <button className="new-btn" onClick={() => alert('Meta Ads API integration -- set META_ACCESS_TOKEN in Vercel env vars and connect an ad account ID.')}>
+        <button className="new-btn" onClick={() => alert('Meta Ads API integration: set META_ACCESS_TOKEN in Vercel env vars and connect an ad account ID.')}>
           {I.plus()} Connect Account
         </button>
       </div>
@@ -2145,7 +2302,7 @@ function MetaAdsPage() {
       <div className="stat-grid">
         <div className="stat s-blue">
           <div className="stat-row1">
-            <div><div className="stat-label">Total Spend -- May</div><div className="stat-value">--</div></div>
+            <div><div className="stat-label">Total Spend · May</div><div className="stat-value">--</div></div>
             <div className="stat-badge">{I.dollar()}</div>
           </div>
           <div className="stat-delta d-blue">Connect account to track spend</div>
@@ -2249,6 +2406,7 @@ function MetaAdsPage() {
 /* ════════════════════════════════════════════
    PAGE 8: Publishing Schedule
 ════════════════════════════════════════════ */
+// CONTENT_BANK — update manually or wire to vault/Content/ folder later
 const CONTENT_BANK = [
   { id: 'p1', type: 'REEL',    title: 'Beelite Honey -- hive harvest BTS',       platform: 'Instagram', status: 'READY',   caption: 'Ever wonder how raw honey actually gets made? We spent the morning with the Beelite crew harvesting straight from the hive. #HarrisonAR #LocalBusiness #BehindTheScenes', hook: 'Raw honey, straight from the hive -- here is what it actually looks like.' },
   { id: 'p2', type: 'STORY',   title: 'Studio setup timelapse',                   platform: 'Instagram', status: 'READY',   caption: 'Light setup in 60 seconds. Speed is a skill. #Filmmaking #VideoProduction', hook: 'Full studio setup in under 60 seconds.' },
@@ -2275,7 +2433,7 @@ function PostModal({ post, onClose }) {
       <div className="modal-box" style={{ maxWidth: 560 }} onClick={e => e.stopPropagation()}>
         <div className="modal-head">
           <div>
-            <div className="modal-eyebrow">{post.type} -- {post.platform}</div>
+            <div className="modal-eyebrow">{post.type} · {post.platform}</div>
             <div className="modal-title">{post.title}</div>
           </div>
           <button className="modal-x" onClick={onClose}>{I.x()}</button>
@@ -2389,6 +2547,13 @@ function BottomTabBar({ active, go }) {
 function App() {
   const [page, setPage]   = useState('dash');
   const [modal, setModal] = useState(null);
+  const { data: hotRaw, loading: hotLoading } = useVaultFile('hot.md');
+  const leadCount = React.useMemo(() => {
+    if (hotLoading) return '…';
+    if (!hotRaw) return null;
+    const parsed = parseHot(hotRaw);
+    return parsed ? String(parsed.pipeline.length) : null;
+  }, [hotRaw, hotLoading]);
   const openModal  = data => setModal(data);
   const closeModal = ()   => setModal(null);
 
@@ -2404,7 +2569,7 @@ function App() {
 
   return (
     <div className="app">
-      <Sidebar active={page} go={setPage}/>
+      <Sidebar active={page} go={setPage} leadCount={leadCount}/>
       <main>{content}</main>
       <ModalManager modal={modal} onClose={closeModal}/>
       <BottomTabBar active={page} go={setPage}/>
