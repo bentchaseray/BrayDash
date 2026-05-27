@@ -1991,7 +1991,10 @@ function ShootsPage({ openModal }) {
       .catch(() => {});
   }, []);
 
-  const prepForShoot = (shoot) => shootPreps.find(p => p.date === shoot.date);
+  const prepForShoot = (shoot) => shootPreps.find(p =>
+    shoot.title.toLowerCase().includes(p.shootTitle.toLowerCase()) ||
+    p.shootTitle.toLowerCase().includes(shoot.title.toLowerCase())
+  );
 
   return (
     <>
