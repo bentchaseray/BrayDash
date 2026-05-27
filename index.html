@@ -461,6 +461,32 @@
   .reset-btn:hover { color: var(--ink-2); border-color: var(--line-2); }
   .day-complete-txt { color: var(--gold); font-size: 11px; letter-spacing: .14em; font-weight: 600; }
 
+  /* -- Checklist sections and tags -- */
+  .cl-section-label { font-size: 10px; letter-spacing: 0.1em; color: var(--ink-2); font-family: 'Courier New', monospace; margin: 4px 12px 6px; padding-bottom: 4px; border-bottom: 1px solid #1a1a1a; }
+  .cl-empty { padding: 12px 12px; font-size: 12px; color: var(--ink-3); }
+  .cl-item.checked .cl-text { opacity: 0.4; text-decoration: line-through; }
+  .cl-tag { font-size: 9px; letter-spacing: .14em; font-weight: 700; padding: 3px 7px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; margin-left: auto; }
+  .cl-tag-invoice, .cl-tag-outreach { color: #bfdbfe; background: rgba(96,165,250,.12); border: 1px solid rgba(96,165,250,.25); }
+  .cl-tag-shoot { color: #fed7aa; background: rgba(245,158,11,.12); border: 1px solid rgba(245,158,11,.25); }
+  .cl-tag-hold { color: var(--ink-3); background: rgba(255,255,255,.05); border: 1px solid var(--line); }
+  .cl-tag-priority { color: #ffd1d1; background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.25); }
+  .cl-tag-strategy, .cl-tag-content { background: rgba(100,100,200,.15); color: #8888cc; border: 1px solid rgba(100,100,200,.25); }
+  .cl-tag-revenue { background: rgba(196,154,60,.15); color: var(--gold); border: 1px solid rgba(196,154,60,.25); }
+  .cl-tag-relationship { background: rgba(100,200,100,.12); color: #88bb88; border: 1px solid rgba(100,200,100,.25); }
+  .cl-tag-risk { background: rgba(200,80,80,.15); color: #cc8888; border: 1px solid rgba(200,80,80,.25); }
+  /* -- Shoot prep docs -- */
+  .prep-btn { margin-top: 10px; background: none; border: 1px solid #333; color: var(--ink-2); font-size: 11px; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-family: 'Courier New', monospace; letter-spacing: 0.05em; }
+  .prep-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .prep-panel { margin-top: 12px; padding: 14px; background: #0d0d0d; border-radius: 6px; border: 1px solid #1a1a1a; }
+  .prep-title { font-size: 12px; color: var(--gold); font-family: 'Courier New', monospace; margin-bottom: 10px; letter-spacing: 0.05em; }
+  .prep-h1 { font-size: 14px; font-weight: bold; color: var(--ink); margin: 10px 0 4px; }
+  .prep-h2 { font-size: 12px; font-weight: bold; color: var(--gold); margin: 10px 0 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .prep-quote { border-left: 2px solid var(--gold); padding-left: 10px; color: var(--ink); font-style: italic; margin: 6px 0; font-size: 12px; }
+  .prep-bold { font-weight: bold; color: var(--ink); font-size: 12px; margin: 4px 0; }
+  .prep-li { color: var(--ink-2); font-size: 12px; padding-left: 12px; margin: 2px 0; }
+  .prep-li::before { content: '· '; color: var(--gold); }
+  .prep-p { color: var(--ink-2); font-size: 12px; margin: 3px 0; line-height: 1.5; }
+  .prep-spacer { height: 8px; }
   /* -- Meta Ads page -- */
   .connect-banner { background: linear-gradient(135deg, var(--card-2), var(--card)); border: 1px solid var(--line-2); border-radius: 16px; padding: 40px; text-align: center; margin-bottom: 24px; }
   .connect-banner h2 { margin: 0 0 10px; font-size: 20px; }
@@ -1497,10 +1523,54 @@ function WelcomeStrip({ done, remaining }) {
   );
 }
 
-function DailyChecklist({ items, checks, onToggle, onReset }) {
-  const total   = items.length;
-  const done    = items.filter(c => checks[c.id]).length;
-  const allDone = done === total && total > 0;
+function DailyChecklist() {
+  const [checklist, setChecklist] = useState({ punchlist: [], executive: [], date: null });
+  const [clLoading, setClLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/checklist')
+      .then(r => r.ok ? r.json() : { punchlist: [], executive: [] })
+      .then(data => { setChecklist(data); setClLoading(false); })
+      .catch(() => setClLoading(false));
+  }, []);
+
+  function toggleItem(id) {
+    const today = new Date().toISOString().slice(0, 10);
+    const allItems = [...checklist.punchlist, ...checklist.executive];
+    const currentChecked = allItems.filter(i => i.checked).map(i => i.id);
+    const newChecked = currentChecked.includes(id)
+      ? currentChecked.filter(x => x !== id)
+      : [...currentChecked, id];
+    setChecklist(prev => ({
+      ...prev,
+      punchlist: prev.punchlist.map(i => i.id === id ? { ...i, checked: !i.checked } : i),
+      executive: prev.executive.map(i => i.id === id ? { ...i, checked: !i.checked } : i),
+    }));
+    fetch('/api/vault-write', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file: 'daily/checklist-state.json', content: JSON.stringify({ date: today, checked: newChecked }) }),
+    });
+  }
+
+  function resetChecklist() {
+    const today = new Date().toISOString().slice(0, 10);
+    setChecklist(prev => ({
+      ...prev,
+      punchlist: prev.punchlist.map(i => ({ ...i, checked: false })),
+      executive: prev.executive.map(i => ({ ...i, checked: false })),
+    }));
+    fetch('/api/vault-write', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file: 'daily/checklist-state.json', content: JSON.stringify({ date: today, checked: [] }) }),
+    });
+  }
+
+  const totalItems = checklist.punchlist.length + checklist.executive.length;
+  const doneItems  = [...checklist.punchlist, ...checklist.executive].filter(i => i.checked).length;
+  const allDone    = doneItems === totalItems && totalItems > 0;
+
   return (
     <div className="panel" style={allDone ? { boxShadow: '0 0 0 1px rgba(196,154,60,.45), 0 12px 30px rgba(196,154,60,.08), 0 2px 8px rgba(0,0,0,.25)' } : {}}>
       <div className="panel-head">
@@ -1510,24 +1580,40 @@ function DailyChecklist({ items, checks, onToggle, onReset }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span className="ph-meta">{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
-          <button className="reset-btn" onClick={e => { e.stopPropagation(); onReset(); }}>Reset</button>
+          <button className="reset-btn" onClick={e => { e.stopPropagation(); resetChecklist(); }}>Reset</button>
         </div>
       </div>
       <div className="dc-progress-wrap">
-        <div className="dc-progress-label"><span>Progress</span><span>{done} / {total} complete</span></div>
-        <div className="dc-progress-bar"><div className="dc-progress-fill" style={{ width: total > 0 ? `${done / total * 100}%` : '0%' }}></div></div>
+        <div className="dc-progress-label"><span>Progress</span><span>{doneItems} / {totalItems} complete</span></div>
+        <div className="dc-progress-bar"><div className="dc-progress-fill" style={{ width: totalItems > 0 ? `${doneItems / totalItems * 100}%` : '0%' }}></div></div>
       </div>
       <div className="dc-list">
-        {items.map(c => (
-          <div key={c.id} className={'dc-row ' + (checks[c.id] ? 'done' : '')} onClick={() => onToggle(c.id)}>
-            <div className="dc-chk">{checks[c.id] && I.check()}</div>
-            <div className="dc-body">
-              <div className="dc-text">{c.text}</div>
-              {c.meta && <div className="dc-meta">{c.meta}</div>}
-            </div>
-            <span className={`cat-badge cat-${c.category.toLowerCase().replace(/\s+/g, '-')}`}>{c.category}</span>
-          </div>
-        ))}
+        {clLoading && <div className="cl-empty">Loading checklist...</div>}
+
+        {!clLoading && checklist.punchlist.length === 0 && (
+          <div className="cl-empty">No briefing yet — check back after 9am.</div>
+        )}
+
+        {checklist.punchlist.length > 0 && (
+          <>
+            <div className="cl-section-label">PUNCHLIST</div>
+            {checklist.punchlist.map(item => (
+              <div key={item.id} className={'dc-row ' + (item.checked ? 'done' : '')} onClick={() => toggleItem(item.id)}>
+                <div className="dc-chk">{item.checked && I.check()}</div>
+                <div className="dc-body"><div className="dc-text">{item.text}</div></div>
+                <span className={'cat-badge cl-tag cl-tag-' + item.tag.toLowerCase()}>{item.tag}</span>
+              </div>
+            ))}
+            <div className="cl-section-label" style={{ marginTop: 12 }}>EXECUTIVE</div>
+            {checklist.executive.map(item => (
+              <div key={item.id} className={'dc-row ' + (item.checked ? 'done' : '')} onClick={() => toggleItem(item.id)}>
+                <div className="dc-chk">{item.checked && I.check()}</div>
+                <div className="dc-body"><div className="dc-text">{item.text}</div></div>
+                <span className={'cat-badge cl-tag cl-tag-' + item.tag.toLowerCase()}>{item.tag}</span>
+              </div>
+            ))}
+          </>
+        )}
       </div>
     </div>
   );
@@ -1556,20 +1642,6 @@ function DashPage({ openModal }) {
   const [done, setDone] = useState({});
   const toggle = i => setDone(s => ({ ...s, [i]: !s[i] }));
 
-  // Daily Checklist: live from hot.md Top 3, fallback to DAILY_CHECKLIST
-  const [checklistItems, setChecklistItems] = useState(DAILY_CHECKLIST);
-  useEffect(() => {
-    if (raw) {
-      const live = parseChecklistFromHot(raw);
-      if (live) setChecklistItems(live);
-    }
-  }, [raw]);
-
-  const [clChecks, setClChecks] = useState({});
-  const clToggle = id => setClChecks(s => ({ ...s, [id]: !s[id] }));
-  const clReset  = () => setClChecks({});
-  const clDone = checklistItems.filter(c => clChecks[c.id]).length;
-  const clRem  = checklistItems.length - clDone;
 
   // Warm Pipeline: live from hot.md WARM section, fallback to constant
   const warmPipeline = raw ? (parseWarmFromHot(raw) || WARM_PIPELINE) : WARM_PIPELINE;
@@ -1707,7 +1779,7 @@ function DashPage({ openModal }) {
             </div>
           </div>
 
-          <DailyChecklist items={checklistItems} checks={clChecks} onToggle={clToggle} onReset={clReset}/>
+          <DailyChecklist/>
 
           {/* Shoots */}
           <div className="panel">
@@ -1886,6 +1958,19 @@ const SHOOTS_STATIC = [
   { title: 'Ozark BBQ Promo',    where: 'Harrison AR',      date: 'Jul 10', value: '--',     status: 'pending',   tag: 'Brand'      },
 ];
 
+function renderPrep(text) {
+  if (!text) return null;
+  return text.split('\n').map((line, i) => {
+    if (/^## /.test(line))           return <div key={i} className="prep-h2">{line.replace(/^## /, '')}</div>;
+    if (/^# /.test(line))            return <div key={i} className="prep-h1">{line.replace(/^# /, '')}</div>;
+    if (/^> /.test(line))            return <div key={i} className="prep-quote">{line.replace(/^> /, '')}</div>;
+    if (/^\*\*(.+)\*\*/.test(line))  return <div key={i} className="prep-bold">{line.replace(/\*\*/g, '')}</div>;
+    if (/^- /.test(line))            return <div key={i} className="prep-li">{line.replace(/^- /, '')}</div>;
+    if (line.trim() === '')          return <div key={i} className="prep-spacer" />;
+    return <div key={i} className="prep-p">{line}</div>;
+  });
+}
+
 function ShootsPage({ openModal }) {
   const { data: raw } = useVaultFile('hot.md');
   const parsed = raw ? parseHot(raw) : null;
@@ -1895,6 +1980,18 @@ function ShootsPage({ openModal }) {
 
   const upcoming = shoots.filter(s => { const d = daysUntil(s.date); return d !== null && d >= 0; });
   const past     = shoots.filter(s => { const d = daysUntil(s.date); return d !== null && d < 0; });
+
+  const [shootPreps, setShootPreps] = useState([]);
+  const [openPrep,   setOpenPrep]   = useState(null);
+
+  useEffect(() => {
+    fetch('/api/shoot-preps')
+      .then(r => r.ok ? r.json() : [])
+      .then(setShootPreps)
+      .catch(() => {});
+  }, []);
+
+  const prepForShoot = (shoot) => shootPreps.find(p => p.date === shoot.date);
 
   return (
     <>
@@ -1927,6 +2024,22 @@ function ShootsPage({ openModal }) {
                     <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, letterSpacing: '.14em', textTransform: 'uppercase' }}>{s.tag}</span>
                     <span className="sc-val">{s.value || '--'}</span>
                   </div>
+                  {prepForShoot(s) && (
+                    <div>
+                      <button
+                        className="prep-btn"
+                        onClick={(e) => { e.stopPropagation(); setOpenPrep(openPrep === s.date ? null : s.date); }}
+                      >
+                        {openPrep === s.date ? '▲ Hide Prep' : '▼ View Prep'}
+                      </button>
+                      {openPrep === s.date && (
+                        <div className="prep-panel">
+                          <div className="prep-title">{prepForShoot(s).prepTitle}</div>
+                          <div className="prep-body">{renderPrep(prepForShoot(s).content)}</div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
