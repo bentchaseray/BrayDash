@@ -487,6 +487,41 @@
   .prep-li::before { content: '· '; color: var(--gold); }
   .prep-p { color: var(--ink-2); font-size: 12px; margin: 3px 0; line-height: 1.5; }
   .prep-spacer { height: 8px; }
+  /* -- Playbook page -- */
+  .pb-intro { background: var(--card); border: 1px solid rgba(196,154,60,.20); border-radius: 12px; padding: 16px 20px; margin-bottom: 22px; font-size: 13px; color: var(--ink-2); line-height: 1.6; }
+  .pb-intro strong { color: var(--ink); }
+  .pb-accordion { display: flex; flex-direction: column; gap: 10px; }
+  .pb-section { background: var(--card); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .pb-section-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 14px 18px; cursor: pointer; user-select: none;
+    transition: background .15s;
+  }
+  .pb-section-head:hover { background: rgba(255,255,255,.025); }
+  .pb-section-head h3 { margin: 0; font-size: 13.5px; font-weight: 600; color: var(--ink); }
+  .pb-section-chev { color: var(--ink-3); transition: transform .2s; flex-shrink: 0; }
+  .pb-section-chev.open { transform: rotate(90deg); }
+  .pb-section-body { padding: 0 18px 16px; border-top: 1px solid var(--line); }
+  .pb-h2 { font-size: 11px; letter-spacing: .16em; font-weight: 700; color: var(--gold); text-transform: uppercase; margin: 16px 0 6px; }
+  .pb-h3 { font-size: 12px; font-weight: 700; color: var(--ink); margin: 12px 0 4px; }
+  .pb-p { font-size: 13px; color: var(--ink-2); line-height: 1.6; margin: 4px 0; }
+  .pb-li { font-size: 13px; color: var(--ink-2); line-height: 1.55; padding-left: 14px; margin: 3px 0; position: relative; }
+  .pb-li::before { content: '·'; position: absolute; left: 0; color: var(--gold); font-weight: 700; }
+  .pb-script {
+    background: rgba(96,165,250,.07); border-left: 3px solid var(--blue);
+    border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 8px 0;
+    font-size: 12.5px; color: var(--ink); line-height: 1.6; font-style: italic;
+  }
+  .pb-bold { font-size: 13px; font-weight: 600; color: var(--ink); margin: 6px 0; }
+  .pb-rule { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
+  .pb-table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 10px 0; }
+  .pb-table th { text-align: left; font-size: 10px; letter-spacing: .14em; color: var(--ink-3); font-weight: 600; padding: 6px 10px; border-bottom: 1px solid var(--line); }
+  .pb-table td { padding: 8px 10px; border-bottom: 1px solid var(--line); color: var(--ink-2); vertical-align: top; }
+  .pb-table tr:last-child td { border-bottom: none; }
+  .pb-load { color: var(--ink-3); font-size: 13px; padding: 40px 0; text-align: center; }
+  .pb-error { color: #fca5a5; font-size: 13px; padding: 20px 0; }
+  .pb-retry { margin-top: 8px; background: rgba(239,68,68,.10); border: 1px solid rgba(239,68,68,.25); color: #fca5a5; font-size: 12px; padding: 6px 14px; border-radius: 8px; cursor: pointer; }
+
   /* -- Meta Ads page -- */
   .connect-banner { background: linear-gradient(135deg, var(--card-2), var(--card)); border: 1px solid var(--line-2); border-radius: 16px; padding: 40px; text-align: center; margin-bottom: 24px; }
   .connect-banner h2 { margin: 0 0 10px; font-size: 20px; }
@@ -1049,6 +1084,7 @@ const I = {
   spark:   p => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...p}><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.64 5.64l2.12 2.12M16.24 16.24l2.12 2.12M16.24 7.76l2.12-2.12M5.64 18.36l2.12-2.12"/></svg>,
   phone:   p => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...p}><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.86 9.11 19.79 19.79 0 01.73 2.49 2 2 0 012.72.5h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L7.09 8.91a16 16 0 006 6l1.27-.91a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>,
   ig:      p => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...p}><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>,
+  book:    p => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...p}><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>,
 };
 
 /* ═══ Sidebar ═══ */
@@ -1061,6 +1097,7 @@ const NAV = [
   { id: 'revenue',    label: 'Revenue',        icon: 'dollar', count: '' },
   { id: 'skills',     label: 'Skills',         icon: 'award',  count: '' },
   { id: 'calendar',   label: 'Calendar',       icon: 'cal',    count: '' },
+  { id: 'playbook',   label: 'Playbook',       icon: 'book',   count: '' },
 ];
 
 function Sidebar({ active, go, leadCount }) {
@@ -1096,7 +1133,7 @@ function Sidebar({ active, go, leadCount }) {
       </div>
       <div className="nav-section">
         <div className="nav-label">Tools</div>
-        {NAV.filter(n => n.id === 'calendar').map(navItem)}
+        {NAV.filter(n => ['calendar','playbook'].includes(n.id)).map(navItem)}
       </div>
       <div className="sidebar-foot">
         <div className="profile-pill">
@@ -2779,6 +2816,184 @@ function CalendarPage({ go }) {
 }
 
 /* ════════════════════════════════════════════
+   PAGE 10: Playbook
+════════════════════════════════════════════ */
+function PlaybookPage() {
+  const { data: raw, loading, error } = useVaultFile('wiki/context/cold-outreach-playbook.md');
+  const [retry, setRetry] = React.useState(0);
+
+  const [open, setOpen] = React.useState({ 0: false });
+
+  const SECTION_ORDER = [
+    'THE MINDSET SHIFT',
+    'CHANNEL 1',
+    'CHANNEL 2',
+    'CHANNEL 3',
+    'HOW THE CHANNELS CONNECT',
+    'AIRTABLE WORKFLOW',
+    'WEEKLY OUTREACH TARGETS',
+    'THE RULE',
+  ];
+
+  const sections = React.useMemo(() => {
+    if (!raw) return [];
+    const parts = raw.split(/\n(?=## )/);
+    return parts
+      .map(part => {
+        const lines = part.split('\n');
+        const header = lines[0].replace(/^##\s*/, '').trim();
+        const body = lines.slice(1).join('\n').trim();
+        return { header, body };
+      })
+      .filter(s => s.header && !s.header.startsWith('#'));
+  }, [raw]);
+
+  const connectSection = React.useMemo(() => {
+    return sections.find(s => /HOW THE CHANNELS CONNECT/i.test(s.header));
+  }, [sections]);
+
+  const toggleOpen = idx => setOpen(prev => ({ ...prev, [idx]: !prev[idx] }));
+
+  React.useEffect(() => {
+    if (sections.length > 0) {
+      const defaultIdx = sections.findIndex(s => /CHANNEL 1|WALK.IN/i.test(s.header));
+      setOpen({ [defaultIdx >= 0 ? defaultIdx : 0]: true });
+    }
+  }, [sections.length]);
+
+  function renderBody(text) {
+    if (!text) return null;
+    const lines = text.split('\n');
+    const out = [];
+    let tableRows = null;
+    let tableHeaders = null;
+
+    const flushTable = () => {
+      if (tableHeaders && tableRows && tableRows.length > 0) {
+        out.push(
+          <table key={'tbl-' + out.length} className="pb-table">
+            <thead>
+              <tr>{tableHeaders.map((h, i) => <th key={i}>{h}</th>)}</tr>
+            </thead>
+            <tbody>
+              {tableRows.map((row, ri) => (
+                <tr key={ri}>{row.map((cell, ci) => <td key={ci}>{cell}</td>)}</tr>
+              ))}
+            </tbody>
+          </table>
+        );
+      }
+      tableHeaders = null;
+      tableRows = null;
+    };
+
+    lines.forEach((line, i) => {
+      const trimmed = line.trim();
+
+      if (/^\|[-:\s|]+\|$/.test(trimmed)) return;
+
+      if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
+        const cells = trimmed.split('|').map(c => c.trim()).filter((_, idx, a) => idx > 0 && idx < a.length - 1);
+        if (!tableHeaders) {
+          tableHeaders = cells;
+          tableRows = [];
+        } else {
+          tableRows.push(cells);
+        }
+        return;
+      }
+
+      if (tableHeaders) flushTable();
+
+      if (/^### /.test(line)) {
+        out.push(<div key={i} className="pb-h3">{line.replace(/^###\s*/, '')}</div>);
+      } else if (/^## /.test(line)) {
+        out.push(<div key={i} className="pb-h2">{line.replace(/^##\s*/, '')}</div>);
+      } else if (/^> /.test(line)) {
+        out.push(<div key={i} className="pb-script">{line.replace(/^>\s*/, '')}</div>);
+      } else if (/^---+$/.test(trimmed)) {
+        out.push(<hr key={i} className="pb-rule"/>);
+      } else if (/^\*\*(.+)\*\*$/.test(trimmed)) {
+        out.push(<div key={i} className="pb-bold">{trimmed.replace(/^\*\*|\*\*$/g, '')}</div>);
+      } else if (/^[-*] /.test(trimmed)) {
+        out.push(<div key={i} className="pb-li">{trimmed.replace(/^[-*]\s*/, '')}</div>);
+      } else if (trimmed === '') {
+        out.push(<div key={i} style={{ height: 6 }}/>);
+      } else {
+        const withBold = trimmed.replace(/\*\*(.+?)\*\*/g, (_, m) => `<b>${m}</b>`);
+        out.push(<div key={i} className="pb-p" dangerouslySetInnerHTML={{ __html: withBold }}/>);
+      }
+    });
+
+    if (tableHeaders) flushTable();
+    return out;
+  }
+
+  const now = useClock();
+  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+  const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+  return (
+    <>
+      <div className="topbar">
+        <div>
+          <div className="crumb"><span className="live-badge"><span className="pulse"/></span> Live</div>
+          <h1 className="page-title">Cold Outreach Playbook</h1>
+          <div className="subtitle">Walk-ins · Cold calls · Email sequences</div>
+        </div>
+        <div className="top-right">
+          <Clock/>
+        </div>
+      </div>
+
+      {loading && <div className="pb-load">Loading playbook...</div>}
+
+      {error && !loading && (
+        <div className="pb-error">
+          Could not load playbook.
+          <br/>
+          <button className="pb-retry" onClick={() => setRetry(r => r + 1)}>Retry</button>
+        </div>
+      )}
+
+      {!loading && !error && sections.length === 0 && (
+        <div className="pb-load">Playbook not found in vault.</div>
+      )}
+
+      {!loading && !error && sections.length > 0 && (
+        <>
+          {connectSection && (
+            <div className="pb-intro">
+              <strong>How the channels connect:</strong>{' '}
+              {connectSection.body.split('\n').find(l => l.trim() && !l.startsWith('#') && !l.startsWith('|')) || ''}
+            </div>
+          )}
+
+          <div className="pb-accordion">
+            {sections.map((sec, idx) => {
+              const isOpen = !!open[idx];
+              return (
+                <div key={idx} className="pb-section">
+                  <div className="pb-section-head" onClick={() => toggleOpen(idx)}>
+                    <h3>{sec.header}</h3>
+                    <span className={'pb-section-chev' + (isOpen ? ' open' : '')}>{I.chev()}</span>
+                  </div>
+                  {isOpen && (
+                    <div className="pb-section-body">
+                      {renderBody(sec.body)}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </>
+  );
+}
+
+/* ════════════════════════════════════════════
    Bottom Tab Bar (mobile only)
 ════════════════════════════════════════════ */
 const TAB_BAR = [
@@ -2826,6 +3041,7 @@ function App() {
     revenue:    <RevenuePage    openModal={openModal}/>,
     skills:     <SkillsPage/>,
     calendar:   <CalendarPage   go={setPage}/>,
+    playbook:   <PlaybookPage/>,
   }[page];
 
   return (
