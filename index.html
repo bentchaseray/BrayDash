@@ -842,9 +842,13 @@ function generatedGreeting() {
   const h = new Date().getHours();
   const time = h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
   const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const d = new Date();
   return `Good ${time}, Bentley. Today is ${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}.`;
+}
+
+function currentMonthLabel() {
+  return new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 }
 
 function parseChecklistFromHot(hotText) {
@@ -904,80 +908,65 @@ function fmtMoney(n) { return '$' + Number(n).toLocaleString(); }
 /* ═══ Fallback data ═══ */
 const FB = {
   top3: [
-    'Send Donovan / HCR the revised brand-film quote',
-    'Call Hotel Seville before May 28',
-    'Edit Creekside Amp pitch deck · final pass',
+    'Struggle Jennings meeting prep -- Tue/Wed June 3-4. Biggest opportunity in pipeline.',
+    'Josey Scott photoshoot -- Friday June 5 morning. Confirm scope and Nikky logistics.',
+    'EH proposal -- deliver to Matt Bell before June 30 renewal.',
   ],
   pipeline: [
-    { name: 'Donovan Fiore',       action: 'Awaiting reply',            value: '$2,500', numValue: 2500 },
-    { name: 'Hotel Seville',       action: 'Call owner before May 28',  value: '$500',   numValue: 500  },
-    { name: 'Todd Curry / BeElite',action: 'Confirm quote after Cabot', value: '$1,750', numValue: 1750 },
-    { name: 'Fade Factory',        action: 'Call or walk in',           value: '$500',   numValue: 500  },
+    { name: 'Josey Scott Photoshoot', action: 'Shoot Friday June 5 morning -- scope confirmed with Dean', value: '$500',    numValue: 500  },
+    { name: 'Struggle Jennings Tour', action: 'Meeting Tue/Wed June 3-4 with Dean -- scope, rate, travel', value: '$3,000+', numValue: 3000 },
+    { name: 'Donovan Fiore / HCR',    action: 'Awaiting reply -- he owns the next move. Bikefest Jun 9-13', value: '$2,500', numValue: 2500 },
   ],
   shoots: [
-    { date: 'Jun 5',  job: 'Creekside Amp',      value: '--',     numValue: 0    },
-    { date: 'Jun 6',  job: 'BeElite Basketball', value: '~$1,750',numValue: 1750 },
-    { date: 'Jun 13', job: 'Straight Up Gravel', value: '$1,000', numValue: 1000 },
+    { date: 'Jun 5',  job: 'Josey Scott photoshoot',  value: '$500',       numValue: 500  },
+    { date: 'Jun 5',  job: 'Creekside Amp',           value: 'retainer',   numValue: 0    },
+    { date: 'Jun 13', job: 'Straight Up Gravel Race', value: '$1,000 net', numValue: 1000 },
   ],
-  revenue: { collected: 800, contracted: 2950, goal: 10000 },
+  revenue: { collected: 1601, contracted: 1200, goal: 10000 },
 };
 
 /* ═══ Lead detail data ═══ */
 const HOT_LEADS = [
   {
+    key: 'joseyscott',
+    name: 'Josey Scott Photoshoot', org: 'Dean / Nikky Cagle', stage: 'HOT', value: '$500', numValue: 500,
+    action: 'Shoot Friday June 5 morning -- all scope confirmed with Dean',
+    email: null, phone: null, instagram: null,
+    via: 'Dean introduction',
+    notes: 'All details (scope, rate, Nikky involvement) discussed Tue/Wed June 3-4 with Dean. Shoot is Friday June 5 morning. Nikky Cagle attending. Happens same day as Creekside Amp EH shoot.',
+    dm: "Hey, just confirming we're locked for Friday morning -- I'll have everything ready. See you then.",
+    nextActions: [
+      'Confirm exact time and meeting point for Friday June 5',
+      'Pack portrait and lifestyle photography kit',
+      'Coordinate Nikky Cagle logistics with Dean',
+    ],
+  },
+  {
+    key: 'strugglejennings',
+    name: 'Struggle Jennings Tour', org: 'Tour / Events', stage: 'HOT', value: '$3,000+', numValue: 3000,
+    action: 'Meeting with Dean -- Tue or Wed June 3-4. Scope, shows, rate, travel.',
+    email: null, phone: null, instagram: null,
+    via: 'Dean connection',
+    notes: 'Biggest opportunity in current pipeline. Meeting with Dean to scope tour shows, rate, and travel logistics. Huge if it closes.',
+    dm: "Looking forward to the meeting -- I'll have a tour package proposal ready to walk through.",
+    nextActions: [
+      'Prepare tour coverage proposal before June 3',
+      'Research Struggle Jennings show schedule',
+      'Be ready to discuss travel rate and deliverables',
+    ],
+  },
+  {
     key: 'donovan',
-    name: 'Donovan Fiore', org: 'HCR / Indigo Road', stage: 'HOT', value: '$2,500', numValue: 2500,
-    action: 'Awaiting reply',
+    name: 'Donovan Fiore / HCR', org: 'HCR / Indigo Road', stage: 'HOT', value: '$2,500', numValue: 2500,
+    action: 'Awaiting reply -- he owns the next move. Bikefest June 9-13 window.',
     email: 'dfiore@theindigoroad.com', phone: null, instagram: null,
     via: 'Marcos Oliveira CC',
-    notes: 'Marketing lead at Indigo Road and Ropeswing dual affiliation. Cyclist background. HCR video delivered May 19. Goal is a direct call, not another email thread. Bikefest June 9-13 is the next in-person window.',
-    dm: "Hey Donovan, Marcos CC'd you on the HCR thread -- I wanted to reach out directly. The video is ready to use now and I think there's a real opportunity here for Bikefest. What does your week look like for a quick call?",
+    notes: 'Marketing lead at Indigo Road and Ropeswing dual affiliation. HCR video delivered. Do not follow up -- he owns the next move. Bikefest June 9-13 is the next in-person window.',
+    dm: "Hey Donovan -- just wanted to make sure you had the HCR video link handy as Bikefest approaches. Happy to jump on a quick call if helpful.",
     nextActions: [
-      'Send follow-up referencing Bikefest (June 9-13)',
-      'Propose a 15-min call this week',
-      'Confirm HCR video link is ready to share',
-    ],
-  },
-  {
-    key: 'hotelseville',
-    name: 'Hotel Seville', org: 'Hospitality', stage: 'HOT', value: '$500', numValue: 500,
-    action: 'Call owner before May 28',
-    email: null, phone: 'Matt Bell gave number directly', instagram: null,
-    via: 'Matt Bell referral',
-    notes: "Matt Bell referred Bentley directly and gave the owner's number. Bentley committed to visiting before May 28. Entry Package at $500.",
-    dm: "Hey, this is Bentley Ray -- Matt Bell passed your number along. I work with Explore Harrison on video content and thought Hotel Seville could be a great fit for a brand spotlight. Would you be open to a quick visit this week?",
-    nextActions: [
-      'Call using number Matt Bell provided',
-      'Visit Hotel Seville before May 28',
-      'Present Entry Package ($500) in person',
-    ],
-  },
-  {
-    key: 'toddcurry',
-    name: 'Todd Curry / BeElite', org: 'BeElite / ImpacTees', stage: 'HOT', value: '$1,750', numValue: 1750,
-    action: 'Confirm quote after Cabot',
-    email: null, phone: null, instagram: null,
-    via: 'ImpacTees (employer)',
-    notes: "Bentley's boss at ImpacTees personally booked the Conway tournament June 6-7. Quote ~$1,750 for photos and promo across 3 venues. Cabot tournament this weekend -- confirm quote after Cabot wraps. Do not pressure at work.",
-    dm: 'Already booked -- this is a confirm call. Follow up after Cabot wraps to lock in the full quote and scope.',
-    nextActions: [
-      'Wait for Cabot tournament to wrap',
-      'Confirm $1,750 quote covers all 3 venues',
-      'Do not discuss at ImpacTees',
-    ],
-  },
-  {
-    key: 'fadefactory',
-    name: 'Fade Factory', org: 'Local barber brand', stage: 'HOT', value: '$500', numValue: 500,
-    action: 'Call or walk in',
-    email: null, phone: null, instagram: null,
-    via: 'Ray Ray personal approach',
-    notes: "Ray Ray approached Bentley personally wanting to buy. Text sent May 11, no response in 10+ days. Next move: phone call or walk in. Do not send another text.",
-    dm: "Hey Ray Ray, just wanted to follow up on that video conversation. I've got some time opening up -- would love to swing by and show you what we did for some other local shops.",
-    nextActions: [
-      'Call Ray Ray (do not text again)',
-      'Or walk into Fade Factory in person',
-      'Show portfolio from similar local shops',
+      'Do not follow up -- wait for his reply',
+      'Bikefest June 9-13 is the natural next window',
+      'Confirm HCR video link is accessible',
     ],
   },
 ];
@@ -1007,32 +996,32 @@ const WARM_DETAIL = [
 ];
 
 const SHOOT_DETAIL = {
-  'Creekside Amp': {
-    title: 'Creekside Amp', client: 'Explore Harrison',
-    date: 'Jun 5, 2026', location: 'Harrison AR',
-    value: 'Retainer (Explore Harrison deal)', netValue: 'Retainer included',
+  'Josey Scott': {
+    title: 'Josey Scott Photoshoot', client: 'Josey Scott / Dean',
+    date: 'Jun 5, 2026 (morning)', location: 'Harrison AR',
+    value: '$500', netValue: '$500',
     contractor: null,
-    notes: 'Nikky Cagle attending to lock partnership terms. Lock revenue split conversation in person.',
+    notes: 'All scope/rate details confirmed with Dean on June 3-4. Nikky Cagle also attending. Morning shoot same day as Creekside Amp.',
     prep: [
-      'Confirm call time and logistics with Nikky Cagle',
-      'Bring contract terms for revenue split conversation',
-      'Pack wide lens for venue establishing shots',
+      'Confirm exact time and meeting point with Dean',
+      'Pack portrait and lifestyle photography kit',
+      'Coordinate arrival with Nikky Cagle',
     ],
   },
-  'BeElite Basketball': {
-    title: 'BeElite Basketball', client: 'Todd Curry / BeElite',
-    date: 'Jun 6-7, 2026', location: 'Conway AR',
-    value: '~$1,750', netValue: '~$1,750 (no contractor costs)',
+  'Creekside Amp': {
+    title: 'Creekside Amp · Explore Harrison', client: 'Explore Harrison',
+    date: 'Jun 5, 2026', location: 'Harrison AR',
+    value: 'EH Retainer', netValue: 'Retainer included',
     contractor: null,
-    notes: 'Photos and promo video across 3 venues. Confirm final scope with Todd after Cabot.',
+    notes: 'Josey Scott event at Creekside Amp. EH content shoot. Nikky Cagle attending -- lock partnership terms and revenue split conversation in person.',
     prep: [
-      'Confirm final scope and quote with Todd Curry',
-      'Get schedule and venue list for Jun 6-7',
-      'Pack sports and action photography kit',
+      'Lock revenue split terms with Nikky Cagle in person',
+      'Pack wide lens for venue establishing shots',
+      'Coordinate arrival time with Explore Harrison team',
     ],
   },
   'Straight Up Gravel': {
-    title: 'Straight Up Gravel', client: 'Event client',
+    title: 'Straight Up Gravel Race', client: 'Event client',
     date: 'Jun 13, 2026', location: 'NW Arkansas',
     value: '$1,200', netValue: '$1,000 net',
     contractor: 'Billy Barrett · drone · $200',
@@ -1044,6 +1033,15 @@ const SHOOT_DETAIL = {
     ],
   },
 };
+
+function lookupShootDetail(jobName) {
+  if (!jobName) return null;
+  const jl = jobName.toLowerCase();
+  for (const [key, val] of Object.entries(SHOOT_DETAIL)) {
+    if (jl.includes(key.toLowerCase())) return val;
+  }
+  return null;
+}
 
 /* lookup maps */
 const WARM_DETAIL_MAP = Object.fromEntries(WARM_DETAIL.map(w => [w.name, w]));
@@ -1351,36 +1349,45 @@ function WarmModal({ lead, onClose }) {
   );
 }
 
-function StatModal({ statKey, onClose }) {
+function StatModal({ statKey, liveData, onClose }) {
+  const monthLabel = currentMonthLabel();
+  const rev = liveData?.revenue ?? { collected: 1601, contracted: 1200, goal: 10000 };
+
   if (statKey === 'collected') {
+    const collected = rev.collected || 0;
     return (
-      <BaseModal onClose={onClose} title="Revenue Collected · May 2026" foot={<button className="cancel-btn" onClick={onClose}>Close</button>}>
+      <BaseModal onClose={onClose} title={`Revenue Collected · ${monthLabel}`} foot={<button className="cancel-btn" onClick={onClose}>Close</button>}>
         <div className="modal-section-label">Breakdown</div>
         <div className="drill-rows">
           <div className="drill-row">
-            <div><div className="drill-row-label">Explore Harrison</div><div className="drill-row-sub">May 10</div></div>
-            <div className="drill-row-val">$500</div>
+            <div><div className="drill-row-label">Explore Harrison</div><div className="drill-row-sub">May 28 · EH invoice</div></div>
+            <div className="drill-row-val">$650</div>
           </div>
           <div className="drill-row">
-            <div><div className="drill-row-label">Ozark BBQ</div><div className="drill-row-sub">May 02</div></div>
+            <div><div className="drill-row-label">ImpacTees</div><div className="drill-row-sub">May 21 + May 28</div></div>
+            <div className="drill-row-val">$651</div>
+          </div>
+          <div className="drill-row">
+            <div><div className="drill-row-label">Ozark BBQ</div><div className="drill-row-sub">May · video delivered</div></div>
             <div className="drill-row-val">$300</div>
           </div>
         </div>
         <div className="drill-total">
           <span className="drill-total-label">Total Collected</span>
-          <span className="drill-total-val">$800</span>
+          <span className="drill-total-val">{fmtMoney(collected)}</span>
         </div>
       </BaseModal>
     );
   }
 
   if (statKey === 'pipeline') {
-    const total = HOT_LEADS.reduce((s, h) => s + h.numValue, 0);
+    const pipeline = liveData?.pipeline ?? HOT_LEADS;
+    const total = pipeline.reduce((s, h) => s + h.numValue, 0);
     return (
       <BaseModal onClose={onClose} title="HOT Pipeline Breakdown" foot={<button className="cancel-btn" onClick={onClose}>Close</button>}>
-        <div className="modal-section-label">4 Active HOT Leads</div>
+        <div className="modal-section-label">{pipeline.length} Active HOT Lead{pipeline.length !== 1 ? 's' : ''}</div>
         <div className="drill-rows">
-          {HOT_LEADS.map((h, i) => (
+          {pipeline.map((h, i) => (
             <div key={i} className="drill-row">
               <div>
                 <div className="drill-row-label">{h.name}</div>
@@ -1399,48 +1406,48 @@ function StatModal({ statKey, onClose }) {
   }
 
   if (statKey === 'goal') {
+    const collected   = rev.collected || 0;
+    const contracted  = rev.contracted || 0;
+    const goal        = rev.goal || 10000;
+    const committed   = collected + contracted;
+    const gap         = Math.max(goal - committed, 0);
+    const hotPipeline = liveData?.pipeline ?? HOT_LEADS;
     return (
-      <BaseModal onClose={onClose} title="Monthly Goal · May 2026" foot={<button className="cancel-btn" onClick={onClose}>Close</button>}>
+      <BaseModal onClose={onClose} title={`Monthly Goal · ${monthLabel}`} foot={<button className="cancel-btn" onClick={onClose}>Close</button>}>
         <div className="modal-section-label">Committed Revenue</div>
         <div className="drill-rows">
           <div className="drill-row">
-            <div className="drill-row-label">Collected · May</div>
-            <div className="drill-row-val">$800</div>
+            <div className="drill-row-label">Collected · {monthLabel.split(' ')[0]}</div>
+            <div className="drill-row-val">{fmtMoney(collected)}</div>
           </div>
           <div className="drill-row">
             <div><div className="drill-row-label">Contracted · Straight Up Gravel</div></div>
-            <div className="drill-row-val">$1,200</div>
-          </div>
-          <div className="drill-row">
-            <div><div className="drill-row-label">Contracted · BeElite Basketball</div></div>
-            <div className="drill-row-val">$1,750</div>
+            <div className="drill-row-val">{fmtMoney(contracted)}</div>
           </div>
         </div>
         <div className="drill-total" style={{ marginBottom: 16 }}>
           <span className="drill-total-label">Total Committed</span>
-          <span className="drill-total-val">$3,750</span>
+          <span className="drill-total-val">{fmtMoney(committed)}</span>
         </div>
 
         <div className="m-divider"></div>
 
-        <div className="modal-section-label">Gap to $10,000 Goal</div>
-        <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 24, fontWeight: 700, color: 'var(--orange)', marginBottom: 16 }}>$6,250</div>
+        <div className="modal-section-label">Gap to {fmtMoney(goal)} Goal</div>
+        <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 24, fontWeight: 700, color: 'var(--orange)', marginBottom: 16 }}>{fmtMoney(gap)}</div>
 
-        <div className="modal-section-label">Leads to Close</div>
-        <div className="drill-rows">
-          <div className="drill-row">
-            <div className="drill-row-label">Donovan Fiore / HCR</div>
-            <div className="drill-row-val">$2,500</div>
-          </div>
-          <div className="drill-row">
-            <div className="drill-row-label">Hotel Seville</div>
-            <div className="drill-row-val">$500</div>
-          </div>
-          <div className="drill-row">
-            <div className="drill-row-label">Fade Factory</div>
-            <div className="drill-row-val">$500</div>
-          </div>
-        </div>
+        {hotPipeline.length > 0 && (
+          <>
+            <div className="modal-section-label">HOT Leads to Close</div>
+            <div className="drill-rows">
+              {hotPipeline.map((h, i) => (
+                <div key={i} className="drill-row">
+                  <div className="drill-row-label">{h.name}</div>
+                  <div className="drill-row-val">{h.value}</div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </BaseModal>
     );
   }
@@ -1527,7 +1534,7 @@ function ModalManager({ modal, onClose }) {
   if (type === 'lead')    return <LeadModal lead={data} onClose={onClose}/>;
   if (type === 'warm')    return <WarmModal lead={data} onClose={onClose}/>;
   if (type === 'shoot')   return <ShootModal shoot={data} onClose={onClose}/>;
-  if (type === 'stat')    return <StatModal statKey={data} onClose={onClose}/>;
+  if (type === 'stat')    return <StatModal statKey={data} liveData={modal.liveData} onClose={onClose}/>;
   if (type === 'revrow')  return <RevRowModal row={data} onClose={onClose}/>;
   return null;
 }
@@ -1671,10 +1678,23 @@ function DashPage({ openModal }) {
   const parsed = raw ? parseHot(raw) : null;
   const d      = parsed || FB;
 
-  const pipeVal = d.pipeline.reduce((s, l) => s + l.numValue, 0);
-  const next    = d.shoots[0];
+  // Filter: HOT pipeline only (exclude DEAD entries with $0 value or "DEAD" in action)
+  const hotPipeline = d.pipeline.filter(l =>
+    l.numValue > 0 && !l.action.toLowerCase().startsWith('dead')
+  );
+
+  // Filter: only future confirmed shoots (no OPEN/fell-through/renewal, no past dates)
+  const confirmedShoots = d.shoots.filter(s => {
+    if (/open|fell.through|renewal/i.test(s.job)) return false;
+    const days = daysUntil(s.date);
+    return days !== null && days >= 0;
+  });
+
+  const pipeVal = hotPipeline.reduce((s, l) => s + l.numValue, 0);
+  const next    = confirmedShoots[0];
   const nextD   = next ? daysUntil(next.date) : null;
   const goalPct = Math.round((d.revenue.collected + d.revenue.contracted) / d.revenue.goal * 100);
+  const liveData = { pipeline: hotPipeline, revenue: d.revenue };
 
   const [done, setDone] = useState({});
   const toggle = i => setDone(s => ({ ...s, [i]: !s[i] }));
@@ -1721,25 +1741,25 @@ function DashPage({ openModal }) {
 
       {/* Stats */}
       <div className="stat-grid">
-        <div className="stat s-green" onClick={() => openModal({ type: 'stat', data: 'collected' })}>
+        <div className="stat s-green" onClick={() => openModal({ type: 'stat', data: 'collected', liveData })}>
           <div className="stat-row1">
-            <div><div className="stat-label">Revenue Collected · May</div><div className="stat-value">{fmtMoney(d.revenue.collected)}</div></div>
+            <div><div className="stat-label">Revenue Collected · {new Date().toLocaleDateString('en-US',{month:'short'})}</div><div className="stat-value">{fmtMoney(d.revenue.collected)}</div></div>
             <div className="stat-badge">{I.dollar()}</div>
           </div>
           <div className="stat-delta d-green">{I.trendUp({ style: { color: 'var(--green)' } })} <b>{fmtMoney(d.revenue.collected)}</b> collected this month</div>
           <Spark pts={[10,12,9,14,18,16,22,28,34]} color="#34d399"/>
         </div>
 
-        <div className="stat s-blue" onClick={() => openModal({ type: 'stat', data: 'pipeline' })}>
+        <div className="stat s-blue" onClick={() => openModal({ type: 'stat', data: 'pipeline', liveData })}>
           <div className="stat-row1">
             <div><div className="stat-label">Pipeline Value</div><div className="stat-value">{fmtMoney(pipeVal)}</div></div>
             <div className="stat-badge">{I.flame()}</div>
           </div>
-          <div className="stat-delta d-blue"><b>{d.pipeline.length} active leads</b> · all HOT</div>
+          <div className="stat-delta d-blue"><b>{hotPipeline.length} active HOT lead{hotPipeline.length !== 1 ? 's' : ''}</b></div>
           <Spark pts={[18,22,20,28,26,30,34,32,38]} color="#60a5fa"/>
         </div>
 
-        <div className="stat s-gold" onClick={() => { const sd = SHOOT_DETAIL[next ? next.job : '']; if (sd) openModal({ type: 'shoot', data: sd }); }}>
+        <div className="stat s-gold" onClick={() => { const sd = lookupShootDetail(next ? next.job : ''); if (sd) openModal({ type: 'shoot', data: sd }); }}>
           <div className="stat-row1">
             <div>
               <div className="stat-label">Next Shoot</div>
@@ -1751,7 +1771,7 @@ function DashPage({ openModal }) {
           <Spark pts={[40,32,28,24,20,18,14,10,8]} color="#c49a3c"/>
         </div>
 
-        <div className="stat s-orange" onClick={() => openModal({ type: 'stat', data: 'goal' })}>
+        <div className="stat s-orange" onClick={() => openModal({ type: 'stat', data: 'goal', liveData })}>
           <div className="stat-row1">
             <div><div className="stat-label">Monthly Goal</div><div className="stat-value">{goalPct}<span className="stat-unit">%</span></div></div>
             <div className="stat-badge">{I.target()}</div>
@@ -1771,7 +1791,7 @@ function DashPage({ openModal }) {
         }}
       >
         <span style={{ fontStyle: 'italic', color: 'var(--ink-2)', fontSize: '0.9rem' }}>
-          {briefingData?.greeting || generatedGreeting()}
+          {generatedGreeting()}
         </span>
         <span style={{ color: 'var(--gold)', fontSize: '0.75rem', marginLeft: '12px', flexShrink: 0 }}>
           {briefingOpen ? '▲ Close' : '▼ Full briefing'}
@@ -1796,24 +1816,27 @@ function DashPage({ openModal }) {
               <h3>Pipeline Snapshot</h3>
               <span className="ph-link">View all {I.arrow({ width: 11, height: 11 })}</span>
             </div>
-            <div className="lead-grid">
-              {d.pipeline.map((l, i) => {
-                const hl = matchHotLead(l.name);
-                return (
-                  <div key={i} className="lead-card" onClick={() => { if (hl) openModal({ type: 'lead', data: hl }); }}>
-                    <div className="lead-top">
-                      <div><div className="lead-name">{l.name}</div><div className="lead-sub">HOT lead</div></div>
-                      <span className="badge-hot"><span className="ember"></span>HOT</span>
-                    </div>
-                    <div className="lead-actions-row">
-                      <div><span className="lead-action-lbl">NEXT ACTION</span><span className="lead-action-text">{l.action}</span></div>
-                      <div className="lead-value">{l.value}</div>
-                    </div>
-                    <div className="lead-meta"><span>{I.target({ width: 11, height: 11 })} <b>Active</b></span></div>
-                  </div>
-                );
-              })}
-            </div>
+            {hotPipeline.length === 0
+              ? <div style={{ padding: '20px 16px', color: 'var(--ink-3)', fontSize: 13 }}>No active HOT leads right now. Check WARM pipeline.</div>
+              : <div className="lead-grid">
+                  {hotPipeline.map((l, i) => {
+                    const hl = matchHotLead(l.name);
+                    return (
+                      <div key={i} className="lead-card" onClick={() => { if (hl) openModal({ type: 'lead', data: hl }); }}>
+                        <div className="lead-top">
+                          <div><div className="lead-name">{l.name}</div><div className="lead-sub">HOT lead</div></div>
+                          <span className="badge-hot"><span className="ember"></span>HOT</span>
+                        </div>
+                        <div className="lead-actions-row">
+                          <div><span className="lead-action-lbl">NEXT ACTION</span><span className="lead-action-text">{l.action}</span></div>
+                          <div className="lead-value">{l.value}</div>
+                        </div>
+                        <div className="lead-meta"><span>{I.target({ width: 11, height: 11 })} <b>Active</b></span></div>
+                      </div>
+                    );
+                  })}
+                </div>
+            }
           </div>
 
           <DailyChecklist/>
@@ -1824,23 +1847,26 @@ function DashPage({ openModal }) {
               <h3>Upcoming Shoots</h3>
               <span className="ph-link">Full calendar {I.arrow({ width: 11, height: 11 })}</span>
             </div>
-            <div className="shoots-row">
-              {d.shoots.map((s, i) => {
-                const days = daysUntil(s.date);
-                const sd   = SHOOT_DETAIL[s.job];
-                return (
-                  <div key={i} className="shoot-sm" onClick={() => { if (sd) openModal({ type: 'shoot', data: sd }); }}>
-                    <div className="shoot-cd">{days !== null ? String(days).padStart(2,'0') : '--'}<span className="shoot-cd-lbl">DAYS OUT</span></div>
-                    <div className="shoot-title">{s.job}</div>
-                    <div className="shoot-where">{s.date}</div>
-                    <div className="shoot-foot">
-                      <span>{I.cam({ width: 13, height: 13, style: { verticalAlign: '-2px' } })} Scheduled</span>
-                      <span className="shoot-net">{s.value || '--'}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            {confirmedShoots.length === 0
+              ? <div style={{ padding: '20px 16px', color: 'var(--ink-3)', fontSize: 13 }}>No confirmed upcoming shoots. Check vault for updates.</div>
+              : <div className="shoots-row">
+                  {confirmedShoots.map((s, i) => {
+                    const days = daysUntil(s.date);
+                    const sd   = lookupShootDetail(s.job);
+                    return (
+                      <div key={i} className="shoot-sm" onClick={() => { if (sd) openModal({ type: 'shoot', data: sd }); }}>
+                        <div className="shoot-cd">{days !== null ? String(days).padStart(2,'0') : '--'}<span className="shoot-cd-lbl">DAYS OUT</span></div>
+                        <div className="shoot-title">{s.job}</div>
+                        <div className="shoot-where">{s.date}</div>
+                        <div className="shoot-foot">
+                          <span>{I.cam({ width: 13, height: 13, style: { verticalAlign: '-2px' } })} Scheduled</span>
+                          <span className="shoot-net">{s.value || '--'}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+            }
           </div>
         </div>
 
@@ -1862,7 +1888,7 @@ function DashPage({ openModal }) {
 
           {/* Revenue */}
           <div className="panel">
-            <div className="panel-head"><h3>Revenue · May 2026</h3><span className="ph-meta">MTD</span></div>
+            <div className="panel-head"><h3>Revenue · {currentMonthLabel()}</h3><span className="ph-meta">MTD</span></div>
             <RevBar collected={d.revenue.collected} contracted={d.revenue.contracted} goal={d.revenue.goal}/>
           </div>
 
@@ -1905,7 +1931,8 @@ const WARM_LEADS = [
 function LeadsPage({ openModal }) {
   const { data: raw, loading, error } = useVaultFile('hot.md');
   const parsed   = raw ? parseHot(raw) : null;
-  const hotLeads = (parsed || FB).pipeline;
+  const allPipeline = (parsed || FB).pipeline;
+  const hotLeads = allPipeline.filter(l => l.numValue > 0 && !l.action.toLowerCase().startsWith('dead'));
   const [filter, setFilter] = useState('ALL');
 
   const all = [
@@ -2299,16 +2326,20 @@ function SkillsPage() {
     if (!biz.trim() || researchStatus === 'running') return;
     setResearchStatus('running');
     try {
-      await fetch('/api/trigger', {
+      const resp = await fetch('/api/trigger', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ workflow: 'lead-research', payload: { businessName: biz.trim() } }),
       });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || `Status ${resp.status}`);
+      }
       setResearchStatus('done');
       setTimeout(() => { setResearchStatus(null); setResearchOpen(false); setResearchBiz(''); }, 3000);
     } catch {
       setResearchStatus('error');
-      setTimeout(() => setResearchStatus(null), 3000);
+      setTimeout(() => setResearchStatus(null), 4000);
     }
   };
 
