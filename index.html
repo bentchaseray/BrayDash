@@ -847,11 +847,58 @@
 <script type="text/babel" data-presets="react">
 const { useState, useEffect } = React;
 
+/* ═══ Briefing parser ═══ */
+function parseBriefing(md) {
+  if (!md || !md.trim()) return null;
+  const text = md.trim();
+  const lines = text.split('\n');
+
+  const extract = (label) => {
+    const re = new RegExp(`^${label.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}`, 'im');
+    const idx = lines.findIndex(l => re.test(l.trim()));
+    if (idx === -1) return '';
+    const SECTION_HEADS = /^(PUNCHLIST|EXECUTIVE ACTIONS|TOMORROW'S HIGHEST|UPCOMING|REVENUE|COUNCIL NOTE|WHERE THE COUNCIL|Good )/i;
+    const body = [];
+    for (let i = idx + 1; i < lines.length; i++) {
+      if (SECTION_HEADS.test(lines[i].trim()) && lines[i].trim().length > 0) break;
+      body.push(lines[i]);
+    }
+    return body.join('\n').trim();
+  };
+
+  const greeting = lines[0] || '';
+  const intro = (() => {
+    const body = [];
+    let i = 1;
+    const SECTION_HEADS = /^(PUNCHLIST|EXECUTIVE ACTIONS|TOMORROW'S HIGHEST|UPCOMING|REVENUE|COUNCIL NOTE)/i;
+    while (i < lines.length) {
+      if (SECTION_HEADS.test(lines[i].trim()) && lines[i].trim().length > 0) break;
+      if (lines[i].trim()) body.push(lines[i]);
+      i++;
+    }
+    return body.join('\n').trim();
+  })();
+
+  return {
+    greeting,
+    intro,
+    punchlist: extract('PUNCHLIST'),
+    executive: extract('EXECUTIVE ACTIONS'),
+    tomorrow:  extract("TOMORROW'S HIGHEST LEVERAGE MOVE"),
+    upcoming:  extract('UPCOMING'),
+    revenue:   extract('REVENUE'),
+    council:   extract('COUNCIL NOTE'),
+    raw: text,
+  };
+}
+
 /* ═══ Vault API ═══ */
 function useVaultFile(path) {
   const [data, setData]       = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState(null);
+  const [tick, setTick]       = useState(0);
+
   useEffect(() => {
     let live = true;
     setLoading(true); setError(null);
@@ -860,8 +907,14 @@ function useVaultFile(path) {
       .then(t => { if (live) { setData(t); setLoading(false); } })
       .catch(e => { if (live) { setError(e.message); setLoading(false); } });
     return () => { live = false; };
+  }, [path, tick]);
+
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => t + 1), 300000);
+    return () => clearInterval(id);
   }, [path]);
-  return { data, loading, error };
+
+  return { data, loading, error, retry: () => setTick(t => t + 1) };
 }
 
 /* ═══ hot.md parser ═══ */
@@ -978,134 +1031,20 @@ function daysUntil(dateStr) {
 
 function fmtMoney(n) { return '$' + Number(n).toLocaleString(); }
 
-/* ═══ Fallback data ═══ */
+/* ═══ Fallback data (shown only when vault is unreachable) ═══ */
 const FB = {
-  top3: [
-    'Struggle Jennings meeting prep -- Tue/Wed June 3-4. Biggest opportunity in pipeline.',
-    'Josey Scott photoshoot -- Friday June 5 morning. Confirm scope and Nikky logistics.',
-    'EH proposal -- deliver to Matt Bell before June 30 renewal.',
-  ],
-  pipeline: [
-    { name: 'Josey Scott Photoshoot', action: 'Shoot Friday June 5 morning -- scope confirmed with Dean', value: '$500',    numValue: 500  },
-    { name: 'Struggle Jennings Tour', action: 'Meeting Tue/Wed June 3-4 with Dean -- scope, rate, travel', value: '$3,000+', numValue: 3000 },
-    { name: 'Donovan Fiore / HCR',    action: 'Awaiting reply -- he owns the next move. Bikefest Jun 9-13', value: '$2,500', numValue: 2500 },
-  ],
-  shoots: [
-    { date: 'Jun 5',  job: 'Josey Scott photoshoot',  value: '$500',       numValue: 500  },
-    { date: 'Jun 5',  job: 'Creekside Amp',           value: 'retainer',   numValue: 0    },
-    { date: 'Jun 13', job: 'Straight Up Gravel Race', value: '$1,000 net', numValue: 1000 },
-  ],
-  revenue: { collected: 1601, contracted: 1200, goal: 10000 },
+  top3: [],
+  pipeline: [],
+  shoots: [],
+  revenue: { collected: 0, contracted: 0, goal: 10000 },
 };
 
-/* ═══ Lead detail data ═══ */
-const HOT_LEADS = [
-  {
-    key: 'joseyscott',
-    name: 'Josey Scott Photoshoot', org: 'Dean / Nikky Cagle', stage: 'HOT', value: '$500', numValue: 500,
-    action: 'Shoot Friday June 5 morning -- all scope confirmed with Dean',
-    email: null, phone: null, instagram: null,
-    via: 'Dean introduction',
-    notes: 'All details (scope, rate, Nikky involvement) discussed Tue/Wed June 3-4 with Dean. Shoot is Friday June 5 morning. Nikky Cagle attending. Happens same day as Creekside Amp EH shoot.',
-    dm: "Hey, just confirming we're locked for Friday morning -- I'll have everything ready. See you then.",
-    nextActions: [
-      'Confirm exact time and meeting point for Friday June 5',
-      'Pack portrait and lifestyle photography kit',
-      'Coordinate Nikky Cagle logistics with Dean',
-    ],
-  },
-  {
-    key: 'strugglejennings',
-    name: 'Struggle Jennings Tour', org: 'Tour / Events', stage: 'HOT', value: '$3,000+', numValue: 3000,
-    action: 'Meeting with Dean -- Tue or Wed June 3-4. Scope, shows, rate, travel.',
-    email: null, phone: null, instagram: null,
-    via: 'Dean connection',
-    notes: 'Biggest opportunity in current pipeline. Meeting with Dean to scope tour shows, rate, and travel logistics. Huge if it closes.',
-    dm: "Looking forward to the meeting -- I'll have a tour package proposal ready to walk through.",
-    nextActions: [
-      'Prepare tour coverage proposal before June 3',
-      'Research Struggle Jennings show schedule',
-      'Be ready to discuss travel rate and deliverables',
-    ],
-  },
-  {
-    key: 'donovan',
-    name: 'Donovan Fiore / HCR', org: 'HCR / Indigo Road', stage: 'HOT', value: '$2,500', numValue: 2500,
-    action: 'Awaiting reply -- he owns the next move. Bikefest June 9-13 window.',
-    email: 'dfiore@theindigoroad.com', phone: null, instagram: null,
-    via: 'Marcos Oliveira CC',
-    notes: 'Marketing lead at Indigo Road and Ropeswing dual affiliation. HCR video delivered. Do not follow up -- he owns the next move. Bikefest June 9-13 is the next in-person window.',
-    dm: "Hey Donovan -- just wanted to make sure you had the HCR video link handy as Bikefest approaches. Happy to jump on a quick call if helpful.",
-    nextActions: [
-      'Do not follow up -- wait for his reply',
-      'Bikefest June 9-13 is the natural next window',
-      'Confirm HCR video link is accessible',
-    ],
-  },
-];
+/* ═══ Lead detail data (enrichment only -- display comes from hot.md) ═══ */
+const HOT_LEADS = [];
 
-const WARM_DETAIL = [
-  {
-    key: 'ozarkbbq', name: 'Ozark BBQ', type: 'Local restaurant',
-    via: 'Referral', service: 'Monthly content retainer',
-    numValue: 1500, action: 'Follow up after June shoots', lastContact: 7,
-    notes: '$300 collected, video already delivered. Retainer pitch planned around June 11 (30 days post-delivery).',
-    dm: "Hey, wanted to check in -- how's the video performing? I've been thinking a monthly content package could be a solid next step for you all.",
-  },
-  {
-    key: 'cliffhouse', name: 'Cliff House Inn', type: 'Hospitality',
-    via: 'Toinette Madison referral', service: 'Hospitality brand reel',
-    numValue: 2000, action: 'Send portfolio reel', lastContact: 12,
-    notes: 'No outreach sent yet. Toinette Madison passed along the contact.',
-    dm: "Hey, Toinette Madison suggested I reach out -- I work with Explore Harrison on destination video content and thought Cliff House Inn would be a great fit. Do you have a minute to connect?",
-  },
-  {
-    key: 'lowgapcafe', name: 'Low Gap Cafe', type: 'F&B brand video',
-    via: 'Toinette Madison referral', service: 'Short-form brand video',
-    numValue: 800, action: 'Reach out re: summer menu', lastContact: 5,
-    notes: 'No outreach sent yet. Toinette Madison passed along the contact.',
-    dm: "Hey, Toinette Madison passed your info along. I create short-form video content for restaurants and local businesses -- I'd love to show you what we've done for some spots in the area. Would you be open to it?",
-  },
-];
+const WARM_DETAIL = [];
 
-const SHOOT_DETAIL = {
-  'Josey Scott': {
-    title: 'Josey Scott Photoshoot', client: 'Josey Scott / Dean',
-    date: 'Jun 5, 2026 (morning)', location: 'Harrison AR',
-    value: '$500', netValue: '$500',
-    contractor: null,
-    notes: 'All scope/rate details confirmed with Dean on June 3-4. Nikky Cagle also attending. Morning shoot same day as Creekside Amp.',
-    prep: [
-      'Confirm exact time and meeting point with Dean',
-      'Pack portrait and lifestyle photography kit',
-      'Coordinate arrival with Nikky Cagle',
-    ],
-  },
-  'Creekside Amp': {
-    title: 'Creekside Amp · Explore Harrison', client: 'Explore Harrison',
-    date: 'Jun 5, 2026', location: 'Harrison AR',
-    value: 'EH Retainer', netValue: 'Retainer included',
-    contractor: null,
-    notes: 'Josey Scott event at Creekside Amp. EH content shoot. Nikky Cagle attending -- lock partnership terms and revenue split conversation in person.',
-    prep: [
-      'Lock revenue split terms with Nikky Cagle in person',
-      'Pack wide lens for venue establishing shots',
-      'Coordinate arrival time with Explore Harrison team',
-    ],
-  },
-  'Straight Up Gravel': {
-    title: 'Straight Up Gravel Race', client: 'Event client',
-    date: 'Jun 13, 2026', location: 'NW Arkansas',
-    value: '$1,200', netValue: '$1,000 net',
-    contractor: 'Billy Barrett · drone · $200',
-    notes: 'Event coverage. Billy Barrett handling drone footage. Contractor cost: $200. Net to Bray Films: $1,000.',
-    prep: [
-      'Confirm Billy Barrett availability and drone plan',
-      'Get event schedule and key shot list',
-      'Coordinate parking and access in NW Arkansas',
-    ],
-  },
-};
+const SHOOT_DETAIL = {};
 
 function lookupShootDetail(jobName) {
   if (!jobName) return null;
@@ -1427,31 +1366,17 @@ function WarmModal({ lead, onClose }) {
 
 function StatModal({ statKey, liveData, onClose }) {
   const monthLabel = currentMonthLabel();
-  const rev = liveData?.revenue ?? { collected: 1601, contracted: 1200, goal: 10000 };
+  const rev = liveData?.revenue ?? { collected: 0, contracted: 0, goal: 10000 };
 
   if (statKey === 'collected') {
     const collected = rev.collected || 0;
     return (
       <BaseModal onClose={onClose} title={`Revenue Collected · ${monthLabel}`} foot={<button className="cancel-btn" onClick={onClose}>Close</button>}>
-        <div className="modal-section-label">Breakdown</div>
-        <div className="drill-rows">
-          <div className="drill-row">
-            <div><div className="drill-row-label">Explore Harrison</div><div className="drill-row-sub">May 28 · EH invoice</div></div>
-            <div className="drill-row-val">$650</div>
-          </div>
-          <div className="drill-row">
-            <div><div className="drill-row-label">ImpacTees</div><div className="drill-row-sub">May 21 + May 28</div></div>
-            <div className="drill-row-val">$651</div>
-          </div>
-          <div className="drill-row">
-            <div><div className="drill-row-label">Ozark BBQ</div><div className="drill-row-sub">May · video delivered</div></div>
-            <div className="drill-row-val">$300</div>
-          </div>
-        </div>
-        <div className="drill-total">
+        <div className="drill-total" style={{ marginBottom: 0 }}>
           <span className="drill-total-label">Total Collected</span>
           <span className="drill-total-val">{fmtMoney(collected)}</span>
         </div>
+        <div style={{ marginTop: 12, fontSize: 12, color: 'var(--ink-3)' }}>See hot.md Revenue section for full breakdown.</div>
       </BaseModal>
     );
   }
@@ -1618,22 +1543,14 @@ function ModalManager({ modal, onClose }) {
 /* ════════════════════════════════════════════
    DAILY CHECKLIST DATA
 ════════════════════════════════════════════ */
-// FALLBACK — used only when hot.md Top 3 cannot be parsed
-const DAILY_CHECKLIST = [
-  { id: 'c1', category: 'URGENT',    text: 'Call Hotel Seville owner · visit before May 28', meta: 'Matt Bell referral · $500' },
-  { id: 'c2', category: 'OUTREACH',  text: 'Send Day 1 DM to Cliff House Inn',                meta: 'Toinette Madison referral · no outreach sent yet' },
-  { id: 'c3', category: 'OUTREACH',  text: 'Send Day 1 DM to Low Gap Cafe',                  meta: 'Toinette Madison referral · no outreach sent yet' },
-  { id: 'c4', category: 'FOLLOW-UP', text: 'Fade Factory · call or walk in',                  meta: '13 days since first text · Ray Ray wants to buy' },
-  { id: 'c5', category: 'CONTENT',   text: 'Post one piece of content today',                 meta: 'Stories, Reel, or BTS clip · consistency builds pipeline' },
-  { id: 'c6', category: 'PIPELINE',  text: 'Check Airtable for new leads from Scout',        meta: 'n8n runs Monday 7am · review and score new entries' },
-];
+const DAILY_CHECKLIST = [];
 
 function WelcomeStrip({ done, remaining }) {
   const hr   = new Date().getHours();
   const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   const msg   = hr < 12
-    ? (remaining > 0 ? `You have ${remaining} unchecked item${remaining !== 1 ? 's' : ''}. Start with Hotel Seville.` : 'All items checked. Day complete.')
+    ? (remaining > 0 ? `You have ${remaining} unchecked item${remaining !== 1 ? 's' : ''}. Start with the first one.` : 'All items checked. Day complete.')
     : (done > 0 ? `${done} item${done !== 1 ? 's' : ''} done today. ${remaining} remaining.` : `${remaining} items waiting. Pick one and go.`);
   return (
     <div className="welcome-strip">
@@ -1742,15 +1659,10 @@ function DailyChecklist() {
 /* ════════════════════════════════════════════
    PAGE 1: Command Center
 ════════════════════════════════════════════ */
-// FALLBACK — update via hot.md WARM Pipeline section
-const WARM_PIPELINE = [
-  { name: 'Ozark BBQ',       sub: 'Brand film · referral',  init: 'OB', heat: .55 },
-  { name: 'Cliff House Inn', sub: 'Hospitality reel',        init: 'CH', heat: .70 },
-  { name: 'Low Gap Cafe',    sub: 'Menu + ambience video',   init: 'LG', heat: .40 },
-];
+const WARM_PIPELINE = [];
 
 function DashPage({ openModal }) {
-  const { data: raw, loading, error } = useVaultFile('hot.md');
+  const { data: raw, loading, error, retry } = useVaultFile('hot.md');
   const parsed = raw ? parseHot(raw) : null;
   const d      = parsed || FB;
 
@@ -1779,20 +1691,10 @@ function DashPage({ openModal }) {
   // Warm Pipeline: live from hot.md WARM section, fallback to constant
   const warmPipeline = raw ? (parseWarmFromHot(raw) || WARM_PIPELINE) : WARM_PIPELINE;
 
-  // Expandable briefing strip
-  const [briefingData, setBriefingData] = useState(null);
+  // Briefing: live from daily/briefing.md via vault hook (auto-refreshes with hot.md)
+  const { data: briefingRaw } = useVaultFile('daily/briefing.md');
+  const briefingData = briefingRaw ? parseBriefing(briefingRaw) : null;
   const [briefingOpen, setBriefingOpen] = useState(false);
-  useEffect(() => {
-    fetch('/api/vault?file=' + encodeURIComponent('daily/briefing.md'))
-      .then(r => r.ok ? r.text() : null)
-      .catch(() => null)
-      .then(text => {
-        if (text) {
-          const lines = text.trim().split('\n').filter(l => l.trim());
-          setBriefingData({ greeting: lines[0] || '', full: text.trim() });
-        }
-      });
-  }, []);
 
   return (
     <>
@@ -1812,7 +1714,7 @@ function DashPage({ openModal }) {
         </div>
       </div>
 
-      {error   && <div className="err-banner">Vault fetch failed: {error}. Showing cached data.</div>}
+      {error   && <div className="err-banner">Vault fetch failed -- <button onClick={retry} style={{ background:'none', border:'1px solid rgba(239,68,68,.4)', color:'#fca5a5', borderRadius:5, padding:'2px 8px', cursor:'pointer', fontSize:12 }}>Retry</button></div>}
       {loading && <div className="load-note"><span className="pulse"></span>Fetching live vault data...</div>}
 
       {/* Stats */}
@@ -1863,23 +1765,69 @@ function DashPage({ openModal }) {
         style={{
           background: 'var(--card)', borderLeft: '3px solid var(--gold)', borderRadius: '8px',
           padding: '12px 16px', cursor: 'pointer', display: 'flex',
-          justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'
+          justifyContent: 'space-between', alignItems: 'center', marginBottom: briefingOpen ? '0' : '16px',
+          borderBottomLeftRadius: briefingOpen ? 0 : '8px', borderBottomRightRadius: briefingOpen ? 0 : '8px',
         }}
       >
         <span style={{ fontStyle: 'italic', color: 'var(--ink-2)', fontSize: '0.9rem' }}>
           {generatedGreeting()}
         </span>
         <span style={{ color: 'var(--gold)', fontSize: '0.75rem', marginLeft: '12px', flexShrink: 0 }}>
-          {briefingOpen ? '▲ Close' : '▼ Full briefing'}
+          {briefingOpen ? '▲ Close' : (briefingData ? '▼ Council briefing' : '▼ No briefing yet')}
         </span>
       </div>
-      {briefingOpen && briefingData && (
+      {briefingOpen && (
         <div style={{
-          background: 'var(--card)', borderRadius: '8px', padding: '16px 20px', marginBottom: '16px',
-          borderLeft: '3px solid var(--gold)', whiteSpace: 'pre-wrap',
-          fontFamily: "'JetBrains Mono', monospace", fontSize: '0.82rem', lineHeight: '1.7', color: 'var(--ink-2)'
+          background: 'var(--card)', borderRadius: '0 0 8px 8px', padding: '16px 20px', marginBottom: '16px',
+          borderLeft: '3px solid var(--gold)', borderTop: '1px solid var(--line)',
         }}>
-          {briefingData.full}
+          {!briefingData ? (
+            <div style={{ color: 'var(--ink-3)', fontSize: 13, fontStyle: 'italic', padding: '4px 0' }}>
+              Briefing not yet generated today. Check back after 9am.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {briefingData.intro && (
+                <div style={{ fontSize: 13, color: 'var(--ink-2)', lineHeight: 1.65 }}>{briefingData.intro}</div>
+              )}
+              {briefingData.punchlist && (
+                <div>
+                  <div style={{ fontSize: 10, letterSpacing: '.18em', color: 'var(--gold)', fontWeight: 700, marginBottom: 6, textTransform: 'uppercase' }}>Punchlist</div>
+                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, lineHeight: 1.7, color: 'var(--ink-2)', whiteSpace: 'pre-wrap' }}>{briefingData.punchlist}</div>
+                </div>
+              )}
+              {briefingData.executive && (
+                <div>
+                  <div style={{ fontSize: 10, letterSpacing: '.18em', color: 'var(--blue)', fontWeight: 700, marginBottom: 6, textTransform: 'uppercase' }}>Executive Actions</div>
+                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, lineHeight: 1.7, color: 'var(--ink-2)', whiteSpace: 'pre-wrap' }}>{briefingData.executive}</div>
+                </div>
+              )}
+              {briefingData.tomorrow && (
+                <div style={{ background: 'rgba(196,154,60,.08)', border: '1px solid rgba(196,154,60,.20)', borderRadius: 8, padding: '10px 14px' }}>
+                  <div style={{ fontSize: 10, letterSpacing: '.18em', color: 'var(--gold)', fontWeight: 700, marginBottom: 4, textTransform: 'uppercase' }}>Tomorrow's Highest Leverage Move</div>
+                  <div style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 500 }}>{briefingData.tomorrow}</div>
+                </div>
+              )}
+              {briefingData.upcoming && (
+                <div>
+                  <div style={{ fontSize: 10, letterSpacing: '.18em', color: 'var(--ink-3)', fontWeight: 700, marginBottom: 6, textTransform: 'uppercase' }}>Upcoming</div>
+                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, lineHeight: 1.7, color: 'var(--ink-2)', whiteSpace: 'pre-wrap' }}>{briefingData.upcoming}</div>
+                </div>
+              )}
+              {briefingData.revenue && (
+                <div>
+                  <div style={{ fontSize: 10, letterSpacing: '.18em', color: 'var(--green)', fontWeight: 700, marginBottom: 6, textTransform: 'uppercase' }}>Revenue</div>
+                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, lineHeight: 1.7, color: 'var(--ink-2)', whiteSpace: 'pre-wrap' }}>{briefingData.revenue}</div>
+                </div>
+              )}
+              {briefingData.council && (
+                <div style={{ borderTop: '1px solid var(--line)', paddingTop: 12 }}>
+                  <div style={{ fontSize: 10, letterSpacing: '.18em', color: 'var(--ink-3)', fontWeight: 700, marginBottom: 6, textTransform: 'uppercase' }}>Council Note</div>
+                  <div style={{ fontSize: 13, color: 'var(--ink-2)', fontStyle: 'italic', lineHeight: 1.6 }}>{briefingData.council}</div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -1997,23 +1945,26 @@ function DashPage({ openModal }) {
 /* ════════════════════════════════════════════
    PAGE 2: Leads
 ════════════════════════════════════════════ */
-// FALLBACK — update via Airtable leads sync or hot.md
-const WARM_LEADS = [
-  { name: 'Ozark BBQ',       org: 'Local restaurant',  numValue: 1500, stage: 'WARM', action: 'Follow up after June shoots', lastContact: 7  },
-  { name: 'Cliff House Inn', org: 'Hospitality',        numValue: 2000, stage: 'WARM', action: 'Send portfolio reel',          lastContact: 12 },
-  { name: 'Low Gap Cafe',    org: 'F&B brand video',    numValue: 800,  stage: 'WARM', action: 'Reach out re: summer menu',   lastContact: 5  },
-];
+const WARM_LEADS = [];
 
 function LeadsPage({ openModal }) {
-  const { data: raw, loading, error } = useVaultFile('hot.md');
+  const { data: raw, loading, error, retry } = useVaultFile('hot.md');
   const parsed   = raw ? parseHot(raw) : null;
   const allPipeline = (parsed || FB).pipeline;
   const hotLeads = allPipeline.filter(l => l.numValue > 0 && !l.action.toLowerCase().startsWith('dead'));
+
+  // Parse WARM leads live from hot.md WARM section
+  const warmRaw = raw ? parseWarmFromHot(raw) : [];
+  const warmLeads = (warmRaw || []).map(w => ({
+    name: w.name, org: w.sub || 'WARM lead', stage: 'WARM',
+    value: '', numValue: 0, action: w.sub || '', lastContact: null,
+  }));
+
   const [filter, setFilter] = useState('ALL');
 
   const all = [
-    ...hotLeads.map(l => ({ ...l, org: 'HOT lead', stage: 'HOT', lastContact: 1 })),
-    ...WARM_LEADS,
+    ...hotLeads.map(l => ({ ...l, org: 'HOT lead', stage: 'HOT', lastContact: null })),
+    ...warmLeads,
   ];
   const shown = filter === 'ALL' ? all : all.filter(l => l.stage === filter);
 
@@ -2021,9 +1972,6 @@ function LeadsPage({ openModal }) {
     if (l.stage === 'HOT') {
       const hl = matchHotLead(l.name);
       if (hl) openModal({ type: 'lead', data: hl });
-    } else {
-      const wd = WARM_DETAIL_MAP[l.name];
-      if (wd) openModal({ type: 'warm', data: wd });
     }
   };
 
@@ -2033,12 +1981,12 @@ function LeadsPage({ openModal }) {
         <div>
           <div className="crumb"><span>Workspace · Leads</span></div>
           <h1 className="page-title">Leads</h1>
-          <div className="subtitle"><em>{hotLeads.length} HOT</em>, {WARM_LEADS.length} warm in pipeline.</div>
+          <div className="subtitle"><em>{hotLeads.length} HOT</em>, {warmLeads.length} warm in pipeline.</div>
         </div>
         <div className="top-right"><Clock/><button className="new-btn">{I.plus()} New Lead</button></div>
       </div>
 
-      {error && <div className="err-banner">Vault fetch failed: {error}. Showing fallback data.</div>}
+      {error && <div className="err-banner">Vault fetch failed -- <button onClick={retry} style={{ background:'none', border:'1px solid rgba(239,68,68,.4)', color:'#fca5a5', borderRadius:5, padding:'2px 8px', cursor:'pointer', fontSize:12 }}>Retry</button></div>}
 
       <div className="section-head">
         <h2>Full Pipeline</h2>
@@ -2074,9 +2022,9 @@ function LeadsPage({ openModal }) {
                       ? <span className="badge-hot"><span className="ember"></span>HOT</span>
                       : <span className="badge-warm">WARM</span>}
                   </td>
-                  <td><span className="tbl-val">{l.value || fmtMoney(l.numValue)}</span></td>
+                  <td><span className="tbl-val">{l.value || (l.numValue ? fmtMoney(l.numValue) : '--')}</span></td>
                   <td><span className="tbl-action">{l.action}</span></td>
-                  <td className="col-lc"><span className="tbl-days">{l.lastContact}d ago</span></td>
+                  <td className="col-lc"><span className="tbl-days">{l.lastContact != null ? `${l.lastContact}d ago` : '--'}</span></td>
                 </tr>
               ))}
             </tbody>
@@ -2090,13 +2038,7 @@ function LeadsPage({ openModal }) {
 /* ════════════════════════════════════════════
    PAGE 3: Shoots
 ════════════════════════════════════════════ */
-// FALLBACK — update via Google Calendar API (api/calendar.js) or edit directly
-const SHOOTS_STATIC = [
-  { title: 'Creekside Amp',      where: 'Explore Harrison', date: 'Jun 5',  value: '--',     status: 'confirmed', tag: 'Brand film' },
-  { title: 'BeElite Basketball', where: 'Conway AR',        date: 'Jun 6',  value: '$1,750', status: 'confirmed', tag: 'Sports'     },
-  { title: 'Straight Up Gravel', where: 'NW Arkansas',      date: 'Jun 13', value: '$1,000', status: 'confirmed', tag: 'Event'      },
-  { title: 'Ozark BBQ Promo',    where: 'Harrison AR',      date: 'Jul 10', value: '--',     status: 'pending',   tag: 'Brand'      },
-];
+const SHOOTS_STATIC = [];
 
 function renderPrep(text) {
   if (!text) return null;
@@ -2112,10 +2054,12 @@ function renderPrep(text) {
 }
 
 function ShootsPage({ openModal }) {
-  const { data: raw } = useVaultFile('hot.md');
+  const { data: raw, loading, error, retry } = useVaultFile('hot.md');
   const parsed = raw ? parseHot(raw) : null;
   const shoots = parsed && parsed.shoots.length > 0
-    ? parsed.shoots.map(s => ({ title: s.job, where: '', date: s.date, value: s.value, status: 'confirmed', tag: 'Shoot' }))
+    ? parsed.shoots
+        .filter(s => !/open|fell.through|renewal/i.test(s.job))
+        .map(s => ({ title: s.job, where: '', date: s.date, value: s.value, status: 'confirmed', tag: 'Shoot' }))
     : SHOOTS_STATIC;
 
   const upcoming = shoots.filter(s => { const d = daysUntil(s.date); return d !== null && d >= 0; });
@@ -2142,10 +2086,15 @@ function ShootsPage({ openModal }) {
         <div>
           <div className="crumb"><span>Workspace · Shoots</span></div>
           <h1 className="page-title">Shoots</h1>
-          <div className="subtitle"><em>{upcoming.length} upcoming</em>{upcoming[0] ? ` · next: ${upcoming[0].title}` : ''}.</div>
+          <div className="subtitle">
+            {loading ? 'Loading...' : <><em>{upcoming.length} upcoming</em>{upcoming[0] ? ` · next: ${upcoming[0].title}` : ''}.</>}
+          </div>
         </div>
         <div className="top-right"><Clock/></div>
       </div>
+
+      {error && <div className="err-banner">Vault fetch failed -- <button onClick={retry} style={{ background:'none', border:'1px solid rgba(239,68,68,.4)', color:'#fca5a5', borderRadius:5, padding:'2px 8px', cursor:'pointer', fontSize:12 }}>Retry</button></div>}
+      {!loading && !error && shoots.length === 0 && <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--ink-3)', fontSize: 13 }}>No shoots in vault. Update hot.md Upcoming Shoots section.</div>}
 
       {upcoming.length > 0 && (
         <>
@@ -2216,25 +2165,14 @@ function ShootsPage({ openModal }) {
 /* ════════════════════════════════════════════
    PAGE 4: Revenue
 ════════════════════════════════════════════ */
-// FALLBACK — update as jobs are invoiced and collected
-const REV_DETAIL = [
-  { month: 'May 2026', rows: [
-    { client: 'Explore Harrison / Creekside Amp', amount: 500,  status: 'collected',  date: 'May 10' },
-    { client: 'Ozark BBQ (retainer)',             amount: 300,  status: 'collected',  date: 'May 02' },
-  ]},
-  { month: 'Jun 2026', rows: [
-    { client: 'BeElite Basketball', amount: 1750, status: 'contracted', date: 'Jun 6'  },
-    { client: 'Straight Up Gravel', amount: 1000, status: 'contracted', date: 'Jun 13' },
-    { client: 'Donovan / HCR',      amount: 2500, status: 'contracted', date: 'TBD'    },
-    { client: 'Hotel Seville',      amount: 500,  status: 'contracted', date: 'TBD'    },
-    { client: 'Fade Factory',       amount: 500,  status: 'contracted', date: 'TBD'    },
-  ]},
-];
+const REV_DETAIL = [];
 
-function RevenuePage({ openModal }) {
-  const { data: raw } = useVaultFile('hot.md');
+function RevenuePage() {
+  const { data: raw, loading, error, retry } = useVaultFile('hot.md');
   const parsed = raw ? parseHot(raw) : null;
   const rev    = parsed ? parsed.revenue : FB.revenue;
+  const pct    = Math.round((rev.collected + rev.contracted) / rev.goal * 100);
+  const gap    = Math.max(rev.goal - rev.collected - rev.contracted, 0);
 
   return (
     <>
@@ -2242,43 +2180,42 @@ function RevenuePage({ openModal }) {
         <div>
           <div className="crumb"><span>Workspace · Revenue</span></div>
           <h1 className="page-title">Revenue</h1>
-          <div className="subtitle">May goal: <em>{fmtMoney(rev.goal)}</em> · {Math.round((rev.collected + rev.contracted) / rev.goal * 100)}% there.</div>
+          <div className="subtitle">
+            {loading
+              ? 'Loading...'
+              : <>{currentMonthLabel()} goal: <em>{fmtMoney(rev.goal)}</em> · {pct}% there.</>}
+          </div>
         </div>
         <div className="top-right"><Clock/></div>
       </div>
 
+      {error && <div className="err-banner">Vault fetch failed -- <button onClick={retry} style={{ background:'none', border:'1px solid rgba(239,68,68,.4)', color:'#fca5a5', borderRadius:5, padding:'2px 8px', cursor:'pointer', fontSize:12 }}>Retry</button></div>}
+
       <div className="panel" style={{ marginBottom: 22 }}>
-        <div className="panel-head"><h3>Monthly Progress · May 2026</h3><span className="ph-meta">MTD</span></div>
-        <RevBar collected={rev.collected} contracted={rev.contracted} goal={rev.goal}/>
+        <div className="panel-head"><h3>Monthly Progress · {currentMonthLabel()}</h3><span className="ph-meta">MTD</span></div>
+        {loading
+          ? <div style={{ padding: '16px 18px', color: 'var(--ink-3)', fontSize: 13 }}>Loading revenue data...</div>
+          : <RevBar collected={rev.collected} contracted={rev.contracted} goal={rev.goal}/>}
       </div>
 
-      <div className="panel">
-        <div className="panel-head"><h3>Revenue Detail</h3><span className="ph-meta">All Jobs</span></div>
-        {REV_DETAIL.map(({ month, rows }) => (
-          <div key={month}>
-            <div className="rev-month-lbl">{month}</div>
-            <table className="rtbl">
-              <thead>
-                <tr><th>Client / Project</th><th>Amount</th><th>Status</th><th className="col-rv-date">Date</th></tr>
-              </thead>
-              <tbody>
-                {rows.map((r, i) => (
-                  <tr key={i} onClick={() => openModal({ type: 'revrow', data: r })}>
-                    <td style={{ fontWeight: 600 }}>{r.client}</td>
-                    <td><span className="tbl-val">{fmtMoney(r.amount)}</span></td>
-                    <td>
-                      {r.status === 'collected'
-                        ? <span className="badge-ok">Collected</span>
-                        : <span className="badge-pending">Contracted</span>}
-                    </td>
-                    <td className="col-rv-date" style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'var(--ink-3)' }}>{r.date}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {!loading && (
+        <div className="panel">
+          <div className="panel-head"><h3>Gap to Goal</h3><span className="ph-meta">TO CLOSE</span></div>
+          <div style={{ padding: '16px 18px' }}>
+            {gap === 0
+              ? <div style={{ color: 'var(--green)', fontWeight: 600, fontSize: 15 }}>Goal reached for {currentMonthLabel()}.</div>
+              : <>
+                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 22, fontWeight: 700, color: 'var(--gold)', marginBottom: 8 }}>{fmtMoney(gap)} remaining</div>
+                  <div style={{ fontSize: 13, color: 'var(--ink-2)', lineHeight: 1.6 }}>
+                    {fmtMoney(rev.collected)} collected + {fmtMoney(rev.contracted)} contracted = {fmtMoney(rev.collected + rev.contracted)} of {fmtMoney(rev.goal)} goal.
+                  </div>
+                  <div style={{ marginTop: 10, fontSize: 12, color: 'var(--ink-3)' }}>
+                    To close: ~{Math.ceil(gap / 800)} retainer{Math.ceil(gap / 800) !== 1 ? 's' : ''} at $800, or ~{Math.ceil(gap / 500)} brand spotlight{Math.ceil(gap / 500) !== 1 ? 's' : ''} at $500.
+                  </div>
+                </>}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </>
   );
 }
@@ -2666,24 +2603,76 @@ function MetaAdsPage() {
 /* ════════════════════════════════════════════
    PAGE 8: Publishing Schedule
 ════════════════════════════════════════════ */
-// CONTENT_BANK — update manually or wire to vault/Content/ folder later
-const CONTENT_BANK = [
-  { id: 'p1', type: 'REEL',    title: 'Beelite Honey -- hive harvest BTS',       platform: 'Instagram', status: 'READY',   caption: 'Ever wonder how raw honey actually gets made? We spent the morning with the Beelite crew harvesting straight from the hive. #HarrisonAR #LocalBusiness #BehindTheScenes', hook: 'Raw honey, straight from the hive -- here is what it actually looks like.' },
-  { id: 'p2', type: 'STORY',   title: 'Studio setup timelapse',                   platform: 'Instagram', status: 'READY',   caption: 'Light setup in 60 seconds. Speed is a skill. #Filmmaking #VideoProduction', hook: 'Full studio setup in under 60 seconds.' },
-  { id: 'p3', type: 'REEL',    title: 'Before / after -- restaurant social edit', platform: 'Instagram', status: 'DRAFT',   caption: 'Same dish. Two very different videos. This is why production quality matters for restaurants. DM for pricing. #RestaurantMarketing', hook: 'Two videos. Same dish. One gets scrolled past. One gets bookmarked.' },
-  { id: 'p4', type: 'CAROUSEL', title: '5 signs your biz needs a video refresh',  platform: 'Facebook',  status: 'DRAFT',   caption: '5 signs your local business is leaving money on the table with bad video. Slide 5 hits different. #LocalMarketing #HarrisonAR', hook: '5 signs your video is costing you customers.' },
-  { id: 'p5', type: 'REEL',    title: 'Client testimonial -- Creekside Lodge',    platform: 'Instagram', status: 'FILMING', caption: 'When the client sends you a voice memo at 11pm saying they are getting direct booking calls from the video... that is the goal. #HospitalityMarketing', hook: 'Direct booking calls from a single video. Here is what we made.' },
-  { id: 'p6', type: 'POST',    title: 'Pricing transparency post',                platform: 'Facebook',  status: 'IDEA',    caption: 'What does a Bray Films video actually cost? Breaking it down so you can budget properly. #Transparent #VideoProduction #HarrisonAR', hook: 'What a Bray Films video costs -- no gatekeeping.' },
-];
-
 const PLATFORM_TARGETS = [
-  { platform: 'Instagram Reels', target: '3x / week', color: 'var(--orange)' },
-  { platform: 'Instagram Stories', target: 'Daily',   color: 'var(--gold)' },
-  { platform: 'Facebook Page', target: '2x / week',   color: 'var(--blue)' },
-  { platform: 'TikTok', target: '2x / week',          color: 'var(--green)' },
+  { platform: 'Instagram Reels',   target: '3x / week', color: 'var(--orange)' },
+  { platform: 'Instagram Stories', target: 'Daily',     color: 'var(--gold)' },
+  { platform: 'Facebook Page',     target: '2x / week', color: 'var(--blue)' },
+  { platform: 'TikTok',            target: '2x / week', color: 'var(--green)' },
 ];
 
-const STATUS_COLOR = { READY: 'var(--green)', DRAFT: 'var(--gold)', FILMING: 'var(--blue)', IDEA: 'var(--ink-3)' };
+const STATUS_COLOR = { READY: 'var(--green)', DRAFT: 'var(--gold)', FILMING: 'var(--blue)', IDEA: 'var(--ink-3)', POSTED: 'var(--ink-3)', SCHEDULED: 'var(--blue)' };
+
+function parsePublishingSchedule(md) {
+  if (!md) return [];
+  const lines = md.split('\n');
+  const posts = [];
+  let id = 0;
+
+  // Try markdown table format first
+  const tableStart = lines.findIndex(l => l.trim().startsWith('|') && /platform|status|type|date/i.test(l));
+  if (tableStart !== -1) {
+    const rawHeaders = lines[tableStart].split('|').map(h => h.trim().toLowerCase()).filter(Boolean);
+    let i = tableStart + 1;
+    if (i < lines.length && /^\|[-:\s|]+\|/.test(lines[i])) i++;
+    while (i < lines.length && lines[i].trim().startsWith('|')) {
+      const cells = lines[i].split('|').map(c => c.trim()).filter(Boolean);
+      if (cells.length > 0) {
+        const row = {};
+        rawHeaders.forEach((h, idx) => { row[h] = cells[idx] || ''; });
+        const status = (row['status'] || 'IDEA').trim().toUpperCase();
+        if (status !== '---' && status !== '') {
+          posts.push({
+            id: `pub-${id++}`,
+            title:    row['title'] || row['content'] || row['description'] || row['post'] || `Entry ${id}`,
+            platform: row['platform'] || '',
+            type:     (row['type'] || row['content type'] || 'POST').toUpperCase(),
+            pillar:   row['pillar'] || '',
+            date:     row['date'] || row['suggested date'] || row['scheduled date'] || '',
+            status,
+            caption:  row['caption'] || row['notes'] || row['copy'] || '',
+            hook:     row['hook'] || '',
+          });
+        }
+      }
+      i++;
+    }
+    if (posts.length > 0) return posts;
+  }
+
+  // Section format: ## Entry Title with key: value lines below
+  let cur = null;
+  const flush = () => { if (cur) { posts.push({ id: `pub-${id++}`, ...cur }); cur = null; } };
+  for (const line of lines) {
+    if (/^##\s+/.test(line)) {
+      flush();
+      cur = { title: line.replace(/^##\s+/, '').trim(), platform: '', type: 'POST', pillar: '', date: '', status: 'IDEA', caption: '', hook: '' };
+    } else if (cur) {
+      const m = line.match(/^[-*]?\s*([A-Za-z ]+):\s*(.+)/);
+      if (m) {
+        const k = m[1].trim().toLowerCase(), v = m[2].trim();
+        if (k === 'platform') cur.platform = v;
+        else if (k === 'type' || k === 'content type') cur.type = v.toUpperCase();
+        else if (k === 'pillar') cur.pillar = v;
+        else if (k === 'date' || k === 'suggested date' || k === 'scheduled date') cur.date = v;
+        else if (k === 'status') cur.status = v.toUpperCase();
+        else if (k === 'caption' || k === 'copy') cur.caption = v;
+        else if (k === 'hook') cur.hook = v;
+      }
+    }
+  }
+  flush();
+  return posts;
+}
 
 function PostModal({ post, onClose }) {
   const [copied, setCopied] = React.useState(false);
@@ -2699,22 +2688,38 @@ function PostModal({ post, onClose }) {
           <button className="modal-x" onClick={onClose}>{I.x()}</button>
         </div>
         <div className="modal-body">
-          <div className="modal-section">
-            <div className="modal-section-label">Hook</div>
-            <div className="modal-section-val" style={{ fontStyle: 'italic', color: 'var(--gold)' }}>{post.hook}</div>
-          </div>
-          <div className="modal-section">
-            <div className="modal-section-label">Caption</div>
-            <div className="modal-section-val" style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{post.caption}</div>
-          </div>
+          {post.hook && (
+            <div className="modal-section">
+              <div className="modal-section-label">Hook</div>
+              <div className="modal-section-val" style={{ fontStyle: 'italic', color: 'var(--gold)' }}>{post.hook}</div>
+            </div>
+          )}
+          {post.caption && (
+            <div className="modal-section">
+              <div className="modal-section-label">Caption</div>
+              <div className="modal-section-val" style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{post.caption}</div>
+            </div>
+          )}
+          {post.pillar && (
+            <div className="modal-section">
+              <div className="modal-section-label">Pillar</div>
+              <div className="modal-section-val">{post.pillar}</div>
+            </div>
+          )}
           <div className="modal-section">
             <div className="modal-section-label">Status</div>
             <div style={{ color: STATUS_COLOR[post.status] || 'var(--ink)' }}>{post.status}</div>
           </div>
+          {post.date && (
+            <div className="modal-section">
+              <div className="modal-section-label">Date</div>
+              <div className="modal-section-val">{post.date}</div>
+            </div>
+          )}
         </div>
         <div className="modal-foot">
           <button className="cancel-btn" onClick={onClose}>Close</button>
-          <button className="copy-btn" onClick={copy}>{I.copy()} {copied ? 'Copied!' : 'Copy Caption'}</button>
+          {post.caption && <button className="copy-btn" onClick={copy}>{I.copy()} {copied ? 'Copied!' : 'Copy Caption'}</button>}
         </div>
       </div>
     </div>
@@ -2722,10 +2727,55 @@ function PostModal({ post, onClose }) {
 }
 
 function PublishingPage() {
+  const { data: schedRaw, loading: schedLoading, error: schedError, retry: schedRetry } = useVaultFile('wiki/Content/publishing-schedule.md');
+  const { data: hotRaw } = useVaultFile('hot.md');
   const [activePost, setActivePost] = React.useState(null);
   const [filter, setFilter]         = React.useState('ALL');
+  const [adding, setAdding]         = React.useState({});
 
-  const shown = filter === 'ALL' ? CONTENT_BANK : CONTENT_BANK.filter(p => p.status === filter);
+  const posts = React.useMemo(() => parsePublishingSchedule(schedRaw), [schedRaw]);
+
+  // Get confirmed upcoming shoots from hot.md for gap detection
+  const hotParsed = hotRaw ? parseHot(hotRaw) : null;
+  const confirmedShoots = hotParsed ? hotParsed.shoots.filter(s => {
+    if (/open|fell.through|renewal/i.test(s.job)) return false;
+    const d = daysUntil(s.date);
+    return d !== null && d >= 0;
+  }) : [];
+
+  // Find shoots with no content entry planned
+  const shootsWithGap = confirmedShoots.filter(shoot => {
+    const shootNameLower = shoot.job.toLowerCase();
+    return !posts.some(p =>
+      p.title.toLowerCase().includes(shootNameLower.split(' ')[0]) ||
+      (p.caption || '').toLowerCase().includes(shootNameLower.split(' ')[0])
+    );
+  });
+
+  const STATUSES = ['ALL', 'READY', 'DRAFT', 'SCHEDULED', 'FILMING', 'IDEA', 'POSTED'];
+  const shown = filter === 'ALL' ? posts : posts.filter(p => p.status === filter);
+
+  const appendToSchedule = async (shoot, type) => {
+    const key = shoot.job + type;
+    setAdding(a => ({ ...a, [key]: true }));
+    try {
+      const current = schedRaw || '';
+      const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const entry = `\n## ${type === 'reel' ? 'Reel' : 'Photo'} - ${shoot.job}\n- Platform: Instagram\n- Type: ${type === 'reel' ? 'REEL' : 'PHOTO'}\n- Date: ${shoot.date}\n- Status: DRAFT\n- Pillar: Showcase\n- Caption: [Draft caption for ${shoot.job}]\n`;
+      const newContent = current.trimEnd() + entry;
+      const resp = await fetch('/api/vault-write', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file: 'wiki/Content/publishing-schedule.md', content: newContent }),
+      });
+      if (!resp.ok) throw new Error('Write failed');
+      schedRetry();
+    } catch (e) {
+      alert('Could not add entry: ' + e.message);
+    } finally {
+      setAdding(a => ({ ...a, [key]: false }));
+    }
+  };
 
   return (
     <>
@@ -2733,11 +2783,12 @@ function PublishingPage() {
         <div>
           <div className="crumb"><span>Marketing · Publishing</span></div>
           <h1 className="page-title">Publishing Schedule</h1>
-          <div className="subtitle">Content bank, posting calendar, and platform targets.</div>
+          <div className="subtitle">
+            {schedLoading ? 'Loading...' : <><em>{posts.length} entries</em> in content vault.</>}
+          </div>
         </div>
         <div className="top-right">
           <Clock/>
-          <button className="new-btn">{I.plus()} New Post</button>
         </div>
       </div>
 
@@ -2751,27 +2802,77 @@ function PublishingPage() {
         ))}
       </div>
 
+      {/* Shoot gap detection */}
+      {shootsWithGap.length > 0 && (
+        <div style={{ marginBottom: 20 }}>
+          {shootsWithGap.map(shoot => (
+            <div key={shoot.job} style={{ background: 'rgba(245,158,11,.06)', border: '1px solid rgba(245,158,11,.25)', borderRadius: 10, padding: '12px 16px', marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+              <span style={{ fontSize: 13, color: 'var(--ink-2)' }}>
+                <span style={{ color: 'var(--orange)', fontWeight: 600 }}>{shoot.job}</span> on {shoot.date} has no content planned.
+              </span>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  disabled={adding[shoot.job + 'reel']}
+                  onClick={() => appendToSchedule(shoot, 'reel')}
+                  style={{ fontSize: 11, padding: '5px 12px', background: 'rgba(245,158,11,.12)', border: '1px solid rgba(245,158,11,.30)', color: 'var(--orange)', borderRadius: 6, cursor: 'pointer' }}
+                >
+                  {adding[shoot.job + 'reel'] ? 'Adding...' : '+ Add Reel slot'}
+                </button>
+                <button
+                  disabled={adding[shoot.job + 'photo']}
+                  onClick={() => appendToSchedule(shoot, 'photo')}
+                  style={{ fontSize: 11, padding: '5px 12px', background: 'rgba(245,158,11,.08)', border: '1px solid rgba(245,158,11,.20)', color: 'var(--ink-2)', borderRadius: 6, cursor: 'pointer' }}
+                >
+                  {adding[shoot.job + 'photo'] ? 'Adding...' : '+ Add Photo slot'}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Filter pills */}
       <div className="filter-row" style={{ marginBottom: 16 }}>
-        {['ALL','READY','DRAFT','FILMING','IDEA'].map(s => (
+        {STATUSES.map(s => (
           <button key={s} className={'filter-pill ' + (filter === s ? 'active' : '')} onClick={() => setFilter(s)}>{s}</button>
         ))}
       </div>
 
-      {/* Content bank grid */}
-      <div className="content-grid">
-        {shown.map(post => (
-          <div key={post.id} className="content-card" onClick={() => setActivePost(post)}>
-            <div className="content-card-top">
-              <span className="content-type">{post.type}</span>
-              <span className="content-status" style={{ color: STATUS_COLOR[post.status] || 'var(--ink-3)' }}>{post.status}</span>
+      {/* States */}
+      {schedLoading && (
+        <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--ink-3)', fontSize: 13 }}>
+          <span className="pulse" style={{ display: 'inline-block', marginRight: 8 }}></span>Loading publishing schedule from vault...
+        </div>
+      )}
+      {schedError && !schedLoading && (
+        <div className="err-banner">
+          Could not load publishing-schedule.md -- {schedError}
+          <button onClick={schedRetry} style={{ marginLeft: 10, background:'none', border:'1px solid rgba(239,68,68,.4)', color:'#fca5a5', borderRadius:5, padding:'2px 8px', cursor:'pointer', fontSize:12 }}>Retry</button>
+        </div>
+      )}
+      {!schedLoading && !schedError && posts.length === 0 && (
+        <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--ink-3)', fontSize: 13 }}>
+          No posts found in publishing-schedule.md. Add entries to the vault file to see them here.
+        </div>
+      )}
+
+      {/* Content grid */}
+      {!schedLoading && shown.length > 0 && (
+        <div className="content-grid">
+          {shown.map(post => (
+            <div key={post.id} className="content-card" onClick={() => setActivePost(post)}>
+              <div className="content-card-top">
+                <span className="content-type">{post.type}</span>
+                <span className="content-status" style={{ color: STATUS_COLOR[post.status] || 'var(--ink-3)' }}>{post.status}</span>
+              </div>
+              <div className="content-title">{post.title}</div>
+              {post.platform && <div className="content-platform">{post.platform}{post.date ? ` · ${post.date}` : ''}</div>}
+              {post.hook && <div className="content-hook">{post.hook}</div>}
+              {!post.hook && post.caption && <div className="content-hook" style={{ opacity: .7 }}>{post.caption.slice(0, 80)}{post.caption.length > 80 ? '...' : ''}</div>}
             </div>
-            <div className="content-title">{post.title}</div>
-            <div className="content-platform">{post.platform}</div>
-            <div className="content-hook">{post.hook}</div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {activePost && <PostModal post={activePost} onClose={() => setActivePost(null)}/>}
     </>
