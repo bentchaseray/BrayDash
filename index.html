@@ -1696,6 +1696,11 @@ function DashPage({ openModal }) {
   const briefingData = briefingRaw ? parseBriefing(briefingRaw) : null;
   const [briefingOpen, setBriefingOpen] = useState(false);
 
+  // Josey Scott shoot prep -- fetched always, card only renders when tomorrow is June 5
+  const { data: jsPrepRaw } = useVaultFile('daily/josey-scott-shoot-prep.md');
+  const tomorrowIsJun5 = daysUntil('Jun 5') === 1;
+  const [jsPrepOpen, setJsPrepOpen] = useState(true);
+
   return (
     <>
       <div className="topbar">
@@ -1834,6 +1839,31 @@ function DashPage({ openModal }) {
       {/* Body */}
       <div className="body-grid">
         <div className="stack">
+          {/* Josey Scott shoot prep card -- tomorrow June 5 */}
+          {tomorrowIsJun5 && jsPrepRaw && (
+            <div className="panel" style={{ borderColor: 'rgba(196,154,60,.40)' }}>
+              <div
+                className="panel-head"
+                onClick={() => setJsPrepOpen(o => !o)}
+                style={{ cursor: 'pointer', borderBottom: jsPrepOpen ? '1px solid var(--line)' : 'none' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  {I.cam({ style: { color: 'var(--gold)' } })}
+                  <div>
+                    <h3 style={{ margin: 0 }}>Shoot Prep -- Tomorrow</h3>
+                    <div style={{ fontSize: 11, color: 'var(--gold)', marginTop: 2, letterSpacing: '.06em' }}>Josey Scott · June 5</div>
+                  </div>
+                </div>
+                <span style={{ fontSize: 11, color: 'var(--gold)' }}>{jsPrepOpen ? '▲ Hide' : '▼ Show'}</span>
+              </div>
+              {jsPrepOpen && (
+                <div className="prep-panel" style={{ margin: '0', borderRadius: '0 0 14px 14px', border: 'none' }}>
+                  {renderPrep(jsPrepRaw)}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Pipeline */}
           <div className="panel">
             <div className="panel-head">
