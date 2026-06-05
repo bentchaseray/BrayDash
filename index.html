@@ -487,6 +487,10 @@
   .prep-li::before { content: '· '; color: var(--gold); }
   .prep-p { color: var(--ink-2); font-size: 12px; margin: 3px 0; line-height: 1.5; }
   .prep-spacer { height: 8px; }
+  .prep-tbl { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 12px; }
+  .prep-tbl th { background: #1a1a1a; color: var(--gold); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; padding: 6px 10px; text-align: left; border-bottom: 1px solid #2a2a2a; }
+  .prep-tbl td { padding: 7px 10px; color: var(--ink-2); border-bottom: 1px solid #151515; vertical-align: top; line-height: 1.45; }
+  .prep-tbl tr:last-child td { border-bottom: none; }
   /* -- Agents page -- */
   .ag-selector { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
   .ag-card {
@@ -1696,9 +1700,6 @@ function DashPage({ openModal }) {
   const briefingData = briefingRaw ? parseBriefing(briefingRaw) : null;
   const [briefingOpen, setBriefingOpen] = useState(false);
 
-  // Josey Scott shoot prep -- fetched always, card only renders when tomorrow is June 5
-  const { data: jsPrepRaw, loading: jsPrepLoading, error: jsPrepError } = useVaultFile('daily/josey-scott-shoot-prep.md');
-  const tomorrowIsJun5 = daysUntil('Jun 5') === 1;
 
   return (
     <>
@@ -1835,32 +1836,6 @@ function DashPage({ openModal }) {
         </div>
       )}
 
-      {/* Shoot prep -- visible on June 4 (tomorrow) and June 5 (day of) */}
-      {tomorrowIsJun5 && (
-        <div style={{
-          background: 'var(--card)', borderLeft: '3px solid var(--gold)', borderRadius: '8px',
-          padding: '16px 20px', marginBottom: '16px',
-        }}>
-          <div style={{ fontSize: 10, letterSpacing: '.18em', color: 'var(--gold)', fontWeight: 700, marginBottom: 12, textTransform: 'uppercase' }}>
-            Shoot Prep -- June 5
-          </div>
-          {jsPrepLoading && (
-            <div style={{ color: 'var(--ink-3)', fontSize: 12 }}>Loading prep doc...</div>
-          )}
-          {jsPrepError && (
-            <div style={{ color: '#fca5a5', fontSize: 12, fontFamily: "'JetBrains Mono', monospace" }}>
-              Could not load shoot prep: {jsPrepError}<br/>
-              Check that <code>daily/josey-scott-shoot-prep.md</code> exists in the vault.
-            </div>
-          )}
-          {jsPrepRaw && (
-            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, lineHeight: 1.7, color: 'var(--ink-2)', whiteSpace: 'pre-wrap' }}>
-              {jsPrepRaw}
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Body */}
       <div className="body-grid">
         <div className="stack">
@@ -1904,21 +1879,7 @@ function DashPage({ openModal }) {
             {confirmedShoots.length === 0
               ? <div style={{ padding: '20px 16px', color: 'var(--ink-3)', fontSize: 13 }}>No confirmed upcoming shoots. Check vault for updates.</div>
               : <div className="shoots-row">
-                  {confirmedShoots.map((s, i) => {
-                    const days = daysUntil(s.date);
-                    const sd   = lookupShootDetail(s.job);
-                    return (
-                      <div key={i} className="shoot-sm" onClick={() => { if (sd) openModal({ type: 'shoot', data: sd }); }}>
-                        <div className="shoot-cd">{days !== null ? String(days).padStart(2,'0') : '--'}<span className="shoot-cd-lbl">DAYS OUT</span></div>
-                        <div className="shoot-title">{s.job}</div>
-                        <div className="shoot-where">{s.date}</div>
-                        <div className="shoot-foot">
-                          <span>{I.cam({ width: 13, height: 13, style: { verticalAlign: '-2px' } })} Scheduled</span>
-                          <span className="shoot-net">{s.value || '--'}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {confirmedShoots.map((s, i) => <ShootSmCard key={i} s={s} openModal={openModal} />)}
                 </div>
             }
           </div>
@@ -2070,17 +2031,109 @@ function LeadsPage({ openModal }) {
 ════════════════════════════════════════════ */
 const SHOOTS_STATIC = [];
 
+function inlineBold(text) {
+  if (!text || !text.includes('**')) return text;
+  const parts = text.split(/(\*\*[^*]+\*\*)/);
+  return parts.map((p, idx) =>
+    /^\*\*/.test(p) ? <strong key={idx}>{p.replace(/\*\*/g, '')}</strong> : p
+  );
+}
+
 function renderPrep(text) {
   if (!text) return null;
-  return text.split('\n').map((line, i) => {
-    if (/^## /.test(line))           return <div key={i} className="prep-h2">{line.replace(/^## /, '')}</div>;
-    if (/^# /.test(line))            return <div key={i} className="prep-h1">{line.replace(/^# /, '')}</div>;
-    if (/^> /.test(line))            return <div key={i} className="prep-quote">{line.replace(/^> /, '')}</div>;
-    if (/^\*\*(.+)\*\*/.test(line))  return <div key={i} className="prep-bold">{line.replace(/\*\*/g, '')}</div>;
-    if (/^- /.test(line))            return <div key={i} className="prep-li">{line.replace(/^- /, '')}</div>;
-    if (line.trim() === '')          return <div key={i} className="prep-spacer" />;
-    return <div key={i} className="prep-p">{line}</div>;
-  });
+  const lines = text.split('\n');
+  const out = [];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    if (/^\s*\|/.test(line)) {
+      const tbl = [];
+      while (i < lines.length && /^\s*\|/.test(lines[i])) { tbl.push(lines[i]); i++; }
+      const rows = tbl
+        .filter(l => !/^\s*\|[\s:\-|]+\|\s*$/.test(l))
+        .map(l => l.replace(/^\s*\|/, '').replace(/\|\s*$/, '').split('|').map(c => c.trim()));
+      if (rows.length >= 1) {
+        const [hdrs, ...body] = rows;
+        out.push(
+          <table key={`t${i}`} className="prep-tbl">
+            <thead><tr>{hdrs.map((h, j) => <th key={j}>{h}</th>)}</tr></thead>
+            {body.length > 0 && <tbody>{body.map((row, r) => <tr key={r}>{row.map((cell, j) => <td key={j}>{inlineBold(cell)}</td>)}</tr>)}</tbody>}
+          </table>
+        );
+      }
+      continue;
+    }
+    if (/^# /.test(line))        out.push(<div key={i} className="prep-h1">{inlineBold(line.replace(/^# +/, ''))}</div>);
+    else if (/^## /.test(line))  out.push(<div key={i} className="prep-h2">{inlineBold(line.replace(/^## +/, ''))}</div>);
+    else if (/^> /.test(line))   out.push(<div key={i} className="prep-quote">{inlineBold(line.replace(/^> /, ''))}</div>);
+    else if (/^- /.test(line))   out.push(<div key={i} className="prep-li">{inlineBold(line.replace(/^- /, ''))}</div>);
+    else if (line.trim() === '') out.push(<div key={i} className="prep-spacer" />);
+    else                         out.push(<div key={i} className="prep-p">{inlineBold(line)}</div>);
+    i++;
+  }
+  return out;
+}
+
+function shootPrepSlug(jobTitle) {
+  return (jobTitle || '').trim().split(/\s+/).slice(0, 2)
+    .map(w => w.toLowerCase().replace(/[^a-z0-9]/g, '')).join('-');
+}
+
+function ShootSmCard({ s, openModal }) {
+  const days = daysUntil(s.date);
+  const sd   = lookupShootDetail(s.job);
+  const { data: prepRaw } = useVaultFile(`daily/${shootPrepSlug(s.job)}-shoot-prep.md`);
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="shoot-sm">
+      <div onClick={() => { if (sd) openModal({ type: 'shoot', data: sd }); }} style={{ cursor: sd ? 'pointer' : 'default' }}>
+        <div className="shoot-cd">{days !== null ? String(days).padStart(2,'0') : '--'}<span className="shoot-cd-lbl">DAYS OUT</span></div>
+        <div className="shoot-title">{s.job}</div>
+        <div className="shoot-where">{s.date}</div>
+        <div className="shoot-foot">
+          <span>{I.cam({ width: 13, height: 13, style: { verticalAlign: '-2px' } })} Scheduled</span>
+          <span className="shoot-net">{s.value || '--'}</span>
+        </div>
+      </div>
+      {prepRaw && (
+        <>
+          <button onClick={() => setOpen(o => !o)} className="prep-btn" style={{ width: '100%', textAlign: 'left', marginTop: 8 }}>
+            {open ? '▲ Hide prep doc' : '▼ View prep doc'}
+          </button>
+          {open && <div className="prep-panel">{renderPrep(prepRaw)}</div>}
+        </>
+      )}
+    </div>
+  );
+}
+
+function ShootLgCard({ s, openModal }) {
+  const days = daysUntil(s.date);
+  const { data: prepRaw } = useVaultFile(`daily/${shootPrepSlug(s.title)}-shoot-prep.md`);
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="shoot-lg">
+      <div className="sc-badge-pos">
+        {s.status === 'confirmed' ? <span className="badge-ok">Confirmed</span> : <span className="badge-pending">Pending</span>}
+      </div>
+      <div className="cd-num">{days !== null ? String(days).padStart(2,'0') : '--'}</div>
+      <div className="cd-lbl">DAYS OUT</div>
+      <div className="sc-title">{s.title}</div>
+      <div className="sc-where">{[s.where, s.date].filter(Boolean).join(' · ')}</div>
+      <div className="sc-foot">
+        <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, letterSpacing: '.14em', textTransform: 'uppercase' }}>{s.tag}</span>
+        <span className="sc-val">{s.value || '--'}</span>
+      </div>
+      {prepRaw && (
+        <div onClick={e => e.stopPropagation()}>
+          <button className="prep-btn" onClick={() => setOpen(o => !o)}>
+            {open ? '▲ Hide Prep' : '▼ View Prep'}
+          </button>
+          {open && <div className="prep-panel">{renderPrep(prepRaw)}</div>}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function ShootsPage({ openModal }) {
@@ -2095,20 +2148,6 @@ function ShootsPage({ openModal }) {
   const upcoming = shoots.filter(s => { const d = daysUntil(s.date); return d !== null && d >= 0; });
   const past     = shoots.filter(s => { const d = daysUntil(s.date); return d !== null && d < 0; });
 
-  const [shootPreps, setShootPreps] = useState([]);
-  const [openPrep,   setOpenPrep]   = useState(null);
-
-  useEffect(() => {
-    fetch('/api/shoot-preps')
-      .then(r => r.ok ? r.json() : [])
-      .then(setShootPreps)
-      .catch(() => {});
-  }, []);
-
-  const prepForShoot = (shoot) => shootPreps.find(p =>
-    shoot.title.toLowerCase().includes(p.shootTitle.toLowerCase()) ||
-    p.shootTitle.toLowerCase().includes(shoot.title.toLowerCase())
-  );
 
   return (
     <>
@@ -2130,41 +2169,7 @@ function ShootsPage({ openModal }) {
         <>
           <div className="sect-div">Upcoming</div>
           <div className="shoots-pg-grid">
-            {upcoming.map((s, i) => {
-              const days = daysUntil(s.date);
-              const sd   = SHOOT_DETAIL[s.title];
-              return (
-                <div key={i} className="shoot-lg" onClick={() => { if (sd) openModal({ type: 'shoot', data: sd }); }}>
-                  <div className="sc-badge-pos">
-                    {s.status === 'confirmed' ? <span className="badge-ok">Confirmed</span> : <span className="badge-pending">Pending</span>}
-                  </div>
-                  <div className="cd-num">{days !== null ? String(days).padStart(2,'0') : '--'}</div>
-                  <div className="cd-lbl">DAYS OUT</div>
-                  <div className="sc-title">{s.title}</div>
-                  <div className="sc-where">{[s.where, s.date].filter(Boolean).join(' · ')}</div>
-                  <div className="sc-foot">
-                    <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, letterSpacing: '.14em', textTransform: 'uppercase' }}>{s.tag}</span>
-                    <span className="sc-val">{s.value || '--'}</span>
-                  </div>
-                  {prepForShoot(s) && (
-                    <div>
-                      <button
-                        className="prep-btn"
-                        onClick={(e) => { e.stopPropagation(); setOpenPrep(openPrep === s.date ? null : s.date); }}
-                      >
-                        {openPrep === s.date ? '▲ Hide Prep' : '▼ View Prep'}
-                      </button>
-                      {openPrep === s.date && (
-                        <div className="prep-panel">
-                          <div className="prep-title">{prepForShoot(s).prepTitle}</div>
-                          <div className="prep-body">{renderPrep(prepForShoot(s).content)}</div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+            {upcoming.map((s, i) => <ShootLgCard key={i} s={s} openModal={openModal} />)}
           </div>
         </>
       )}
