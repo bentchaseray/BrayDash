@@ -1697,7 +1697,7 @@ function DashPage({ openModal }) {
   const [briefingOpen, setBriefingOpen] = useState(false);
 
   // Josey Scott shoot prep -- fetched always, card only renders when tomorrow is June 5
-  const { data: jsPrepRaw } = useVaultFile('daily/josey-scott-shoot-prep.md');
+  const { data: jsPrepRaw, loading: jsPrepLoading, error: jsPrepError } = useVaultFile('daily/josey-scott-shoot-prep.md');
   const tomorrowIsJun5 = daysUntil('Jun 5') === 1;
 
   return (
@@ -1835,8 +1835,8 @@ function DashPage({ openModal }) {
         </div>
       )}
 
-      {/* Shoot prep -- always visible when tomorrow is June 5 */}
-      {tomorrowIsJun5 && jsPrepRaw && (
+      {/* Shoot prep -- visible on June 4 (tomorrow) and June 5 (day of) */}
+      {tomorrowIsJun5 && (
         <div style={{
           background: 'var(--card)', borderLeft: '3px solid var(--gold)', borderRadius: '8px',
           padding: '16px 20px', marginBottom: '16px',
@@ -1844,9 +1844,20 @@ function DashPage({ openModal }) {
           <div style={{ fontSize: 10, letterSpacing: '.18em', color: 'var(--gold)', fontWeight: 700, marginBottom: 12, textTransform: 'uppercase' }}>
             Shoot Prep -- June 5
           </div>
-          <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, lineHeight: 1.7, color: 'var(--ink-2)', whiteSpace: 'pre-wrap' }}>
-            {jsPrepRaw}
-          </div>
+          {jsPrepLoading && (
+            <div style={{ color: 'var(--ink-3)', fontSize: 12 }}>Loading prep doc...</div>
+          )}
+          {jsPrepError && (
+            <div style={{ color: '#fca5a5', fontSize: 12, fontFamily: "'JetBrains Mono', monospace" }}>
+              Could not load shoot prep: {jsPrepError}<br/>
+              Check that <code>daily/josey-scott-shoot-prep.md</code> exists in the vault.
+            </div>
+          )}
+          {jsPrepRaw && (
+            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, lineHeight: 1.7, color: 'var(--ink-2)', whiteSpace: 'pre-wrap' }}>
+              {jsPrepRaw}
+            </div>
+          )}
         </div>
       )}
 
