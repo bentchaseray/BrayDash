@@ -1699,7 +1699,6 @@ function DashPage({ openModal }) {
   // Josey Scott shoot prep -- fetched always, card only renders when tomorrow is June 5
   const { data: jsPrepRaw } = useVaultFile('daily/josey-scott-shoot-prep.md');
   const tomorrowIsJun5 = daysUntil('Jun 5') === 1;
-  const [jsPrepOpen, setJsPrepOpen] = useState(true);
 
   return (
     <>
@@ -1836,34 +1835,24 @@ function DashPage({ openModal }) {
         </div>
       )}
 
+      {/* Shoot prep -- always visible when tomorrow is June 5 */}
+      {tomorrowIsJun5 && jsPrepRaw && (
+        <div style={{
+          background: 'var(--card)', borderLeft: '3px solid var(--gold)', borderRadius: '8px',
+          padding: '16px 20px', marginBottom: '16px',
+        }}>
+          <div style={{ fontSize: 10, letterSpacing: '.18em', color: 'var(--gold)', fontWeight: 700, marginBottom: 12, textTransform: 'uppercase' }}>
+            Shoot Prep -- June 5
+          </div>
+          <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, lineHeight: 1.7, color: 'var(--ink-2)', whiteSpace: 'pre-wrap' }}>
+            {jsPrepRaw}
+          </div>
+        </div>
+      )}
+
       {/* Body */}
       <div className="body-grid">
         <div className="stack">
-          {/* Josey Scott shoot prep card -- tomorrow June 5 */}
-          {tomorrowIsJun5 && jsPrepRaw && (
-            <div className="panel" style={{ borderColor: 'rgba(196,154,60,.40)' }}>
-              <div
-                className="panel-head"
-                onClick={() => setJsPrepOpen(o => !o)}
-                style={{ cursor: 'pointer', borderBottom: jsPrepOpen ? '1px solid var(--line)' : 'none' }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  {I.cam({ style: { color: 'var(--gold)' } })}
-                  <div>
-                    <h3 style={{ margin: 0 }}>Shoot Prep -- Tomorrow</h3>
-                    <div style={{ fontSize: 11, color: 'var(--gold)', marginTop: 2, letterSpacing: '.06em' }}>Josey Scott · June 5</div>
-                  </div>
-                </div>
-                <span style={{ fontSize: 11, color: 'var(--gold)' }}>{jsPrepOpen ? '▲ Hide' : '▼ Show'}</span>
-              </div>
-              {jsPrepOpen && (
-                <div className="prep-panel" style={{ margin: '0', borderRadius: '0 0 14px 14px', border: 'none' }}>
-                  {renderPrep(jsPrepRaw)}
-                </div>
-              )}
-            </div>
-          )}
-
           {/* Pipeline */}
           <div className="panel">
             <div className="panel-head">
