@@ -57,7 +57,7 @@ export default async function handler(req, res) {
   const punchlist = punchlistItems.map(i => ({ ...i, checked: checkedIds.includes(i.id) }));
   const executive = execItems.map(i => ({ ...i, checked: checkedIds.includes(i.id) }));
 
-  return res.status(200).json({ date: today, punchlist, executive });
+  return res.status(200).json({ date: today, punchlist, executive, fetchedAt: new Date().toISOString() });
 }
 
 function inferTag(text, section) {

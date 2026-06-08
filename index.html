@@ -1565,7 +1565,7 @@ function WelcomeStrip({ done, remaining }) {
 }
 
 function DailyChecklist() {
-  const [checklist, setChecklist] = useState({ punchlist: [], executive: [], date: null });
+  const [checklist, setChecklist] = useState({ punchlist: [], executive: [], date: null, fetchedAt: null });
   const [clLoading, setClLoading] = useState(true);
 
   useEffect(() => {
@@ -1654,6 +1654,11 @@ function DailyChecklist() {
               </div>
             ))}
           </>
+        )}
+        {checklist.fetchedAt && (
+          <div style={{ padding: '10px 16px 6px', fontSize: 10, color: 'var(--ink-3)', letterSpacing: '.08em', borderTop: '1px solid var(--line)', marginTop: 8 }}>
+            Last updated: {new Date(checklist.fetchedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+          </div>
         )}
       </div>
     </div>
