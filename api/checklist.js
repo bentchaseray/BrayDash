@@ -41,12 +41,12 @@ export default async function handler(req, res) {
     if (/^EXECUTIVE ACTIONS/i.test(trimmed)) { inPunchlist = false; inExec = true;  continue; }
     if (/^UPCOMING/i.test(trimmed))          { inPunchlist = false; inExec = false; continue; }
 
-    if (inPunchlist && /^\d+\./.test(trimmed)) {
-      const text = trimmed.replace(/^\d+\.\s*/, '');
+    if (inPunchlist && (/^\d+\./.test(trimmed) || /^[-\u2022]\s+/.test(trimmed))) {
+      const text = trimmed.replace(/^\d+\.\s*/, '').replace(/^[-\u2022]\s+/, '');
       punchlistItems.push({ id: String(punchlistItems.length + 1), text, tag: inferTag(text, 'punchlist') });
     }
-    if (inExec && /^[A-C]\./.test(trimmed)) {
-      const text = trimmed.replace(/^[A-C]\.\s*/, '');
+    if (inExec && (/^[A-C]\./.test(trimmed) || /^[-\u2022]\s+/.test(trimmed))) {
+      const text = trimmed.replace(/^[A-C]\.\s*/, '').replace(/^[-\u2022]\s+/, '');
       execItems.push({ id: String.fromCharCode(65 + execItems.length), text, tag: inferTag(text, 'executive') });
     }
   }
