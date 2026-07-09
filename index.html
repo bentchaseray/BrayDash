@@ -921,7 +921,46 @@ function useVaultFile(path) {
   return { data, loading, error, retry: () => setTick(t => t + 1) };
 }
 
-/* ═══ hot.md parser ═══ */
+/* ═══ hot.md parsers -- format-tolerant: old n8n-era "## HOT Pipeline" AND current "# HOT" auto-generated format (2026-07-08) ═══ */
+function _stripWiki(s) {
+  return (s || '')
+    .replace(/\[\[([^\]]*?)(?:\\\||\|)([^\]]*?)\]\]/g, '$2')
+    .replace(/\[\[([^\]]*?)\]\]/g, '$1')
+    .replace(/\*\*/g, '')
+    .trim();
+}
+function _splitRow(l) {
+  const P = '\u0001';
+  return l.replace(/\\\|/g, P).split('|')
+    .map(c => _stripWiki(c.split(P).join('|').trim()))
+    .filter((_, i, a) => i > 0 && i < a.length - 1);
+}
+/* Finds the first section matching headRe (h1 or h2) that actually contains table rows. */
+function _section(lines, headRe) {
+  let best = { header: null, rows: [] };
+  let inSec = false, header = null, pastDiv = false, rows = [];
+  const flush = () => { if (rows.length && !best.rows.length) best = { header, rows }; header = null; rows = []; pastDiv = false; };
+  for (const l of lines) {
+    if (headRe.test(l)) { flush(); inSec = true; continue; }
+    if (inSec && /^#{1,2}\s/.test(l)) { flush(); inSec = false; continue; }
+    if (!inSec) continue;
+    if (/^\|[-:\s|]+\|$/.test(l.trim())) { pastDiv = true; continue; }
+    if (l.trim().startsWith('|')) {
+      const cells = _splitRow(l);
+      if (!pastDiv && !header) { header = cells; continue; }
+      if (pastDiv && cells.length >= 2) rows.push(cells);
+    }
+  }
+  flush();
+  return best;
+}
+function _col(header, names, fallback) {
+  if (header) {
+    const h = header.map(c => c.toLowerCase());
+    for (const n of names) { const i = h.findIndex(c => c.includes(n)); if (i !== -1) return i; }
+  }
+  return fallback;
+}
 function parseHot(md) {
   if (!md) return null;
   const lines = md.split('\n');
@@ -929,41 +968,35 @@ function parseHot(md) {
   const top3 = [];
   let inTop = false;
   for (const l of lines) {
-    if (/^##\s+Top 3/i.test(l))    { inTop = true; continue; }
-    if (inTop && /^##\s/.test(l))  { inTop = false; }
-    if (inTop) { const m = l.match(/^\d+\.\s+(.+)/); if (m) top3.push(m[1].trim()); }
+    if (/^##\s+Top 3/i.test(l))       { inTop = true; continue; }
+    if (inTop && /^#{1,2}\s/.test(l)) { inTop = false; }
+    if (inTop) { const m = l.match(/^\d+\.\s+(.+)/); if (m) top3.push(_stripWiki(m[1])); }
   }
 
-  function table(re) {
-    const rows = []; let inSec = false, pastDiv = false;
-    for (const l of lines) {
-      if (re.test(l))               { inSec = true; pastDiv = false; continue; }
-      if (inSec && /^##\s/.test(l)) { inSec = false; continue; }
-      if (!inSec) continue;
-      if (/^\|[-:\s|]+\|/.test(l)) { pastDiv = true; continue; }
-      if (pastDiv && l.trim().startsWith('|')) {
-        const cells = l.split('|').map(c => c.trim()).filter((_, i, a) => i > 0 && i < a.length - 1);
-        if (cells.length >= 2) rows.push(cells);
-      }
-    }
-    return rows;
-  }
-
-  const pipeline = table(/^##\s+HOT Pipeline/i).map(([name, action, value]) => ({
-    name: name || '', action: action || '', value: value || '',
-    numValue: parseFloat((value || '').replace(/[$,]/g, '')) || 0,
+  const hot   = _section(lines, /^#{1,2}\s+HOT\b/i);
+  const iName = _col(hot.header, ['lead', 'name'], 0);
+  const iVal  = _col(hot.header, ['value'], 2);
+  const iAct  = _col(hot.header, ['next action', 'action', 'status'], 1);
+  const pipeline = hot.rows.map(c => ({
+    name: c[iName] || '', action: c[iAct] || '', value: c[iVal] || '',
+    numValue: parseFloat((c[iVal] || '').replace(/[~$,]/g, '')) || 0,
   }));
 
-  const shoots = table(/^##\s+Upcoming Shoots/i).map(([date, job, value]) => ({
-    date: date || '', job: job || '', value: value || '',
-    numValue: parseFloat((value || '').replace(/[$,]/g, '')) || 0,
-  }));
+  const up    = _section(lines, /^#{1,2}\s+(UPCOMING|Upcoming Shoots)\b/i);
+  const uDate = _col(up.header, ['date'], 0);
+  const uJob  = _col(up.header, ['event', 'job', 'client'], 1);
+  const uVal  = _col(up.header, ['value'], 2);
+  const shoots = up.rows
+    .map(c => ({ date: c[uDate] || '', job: c[uJob] || '', value: c[uVal] || '',
+      numValue: parseFloat((c[uVal] || '').replace(/[~$,]/g, '')) || 0 }))
+    .filter(s => s.date && s.date !== '--');
 
-  const revSec = md.match(/##\s+Revenue[^\n]*([\s\S]*?)(?:\n##|$)/i)?.[1] || '';
-  const n = s => parseFloat((s || '').replace(/[$,\s]/g, '')) || 0;
-  const collected  = n(revSec.match(/Collected[^:]*:\s*(\$?[\d,]+)/i)?.[1]);
-  const contracted = n(revSec.match(/Contracted[^:]*:\s*(\$?[\d,]+)/i)?.[1]);
-  const goal       = n(revSec.match(/goal[^:]*:\s*(\$?[\d,]+)/i)?.[1]) || 10000;
+  const revSec = md.match(/#{1,2}\s+REVENUE[^\n]*\n([\s\S]*?)(?:\n#{1,2}\s|$)/i)?.[1] || '';
+  const n = s => parseFloat((s || '').replace(/[~$,\s]/g, '')) || 0;
+  const collected  = n(revSec.match(/Collected[^:]*:\s*~?(\$?[\d,]+)/i)?.[1]);
+  const contracted = n(revSec.match(/(?:Contracted|Pipeline incoming)[^:]*:\s*~?(\$?[\d,]+)/i)?.[1]);
+  const gap        = n(revSec.match(/Gap[^:]*:\s*~?(\$?[\d,]+)/i)?.[1]);
+  const goal       = n(revSec.match(/goal[^:]*:\s*~?(\$?[\d,]+)/i)?.[1]) || (gap ? collected + gap : 10000);
 
   return { top3, pipeline, shoots, revenue: { collected, contracted, goal } };
 }
@@ -1003,24 +1036,23 @@ function parseChecklistFromHot(hotText) {
 function parseWarmFromHot(hotText) {
   if (!hotText) return null;
   const lines = hotText.split('\n');
-  const rows = []; let inSec = false, pastDiv = false;
-  for (const l of lines) {
-    if (/^##\s+WARM\s+(Pipeline|Leads?)/i.test(l)) { inSec = true; pastDiv = false; continue; }
-    if (inSec && /^##\s/.test(l)) { inSec = false; continue; }
-    if (!inSec) continue;
-    if (/^\|[-:\s|]+\|/.test(l)) { pastDiv = true; continue; }
-    if (pastDiv && l.trim().startsWith('|')) {
-      const cells = l.split('|').map(c => c.trim()).filter((_, i, a) => i > 0 && i < a.length - 1);
-      if (cells.length >= 1 && cells[0]) rows.push(cells);
-    }
-  }
-  if (!rows.length) return null;
-  return rows.map(([name, sub]) => ({
-    name: name || '',
-    sub:  sub  || '',
-    init: (name || '').split(/\s+/).map(w => w[0] || '').slice(0, 2).join('').toUpperCase(),
-    heat: 0.5,
-  }));
+  const sec = _section(lines, /^#{1,2}\s+WARM\b/i);
+  if (!sec.rows.length) return null;
+  const iName = _col(sec.header, ['lead', 'name'], 0);
+  const iVal  = _col(sec.header, ['value'], -1);
+  const iSub  = _col(sec.header, ['status', 'next action'], 1);
+  return sec.rows.map(c => {
+    const name = c[iName] || '';
+    const bits = [];
+    if (iVal !== -1 && c[iVal] && c[iVal] !== '--') bits.push(c[iVal]);
+    if (c[iSub] && iSub !== iVal) bits.push(c[iSub]);
+    return {
+      name,
+      sub:  bits.join(' · '),
+      init: name.split(/\s+/).map(w => w[0] || '').slice(0, 2).join('').toUpperCase(),
+      heat: 0.5,
+    };
+  });
 }
 
 /* ═══ Helpers ═══ */
@@ -1677,7 +1709,7 @@ function DashPage({ openModal }) {
 
   // Filter: HOT pipeline only (exclude DEAD entries with $0 value or "DEAD" in action)
   const hotPipeline = d.pipeline.filter(l =>
-    l.numValue > 0 && !l.action.toLowerCase().startsWith('dead')
+    !l.action.toLowerCase().startsWith('dead') && !l.name.toLowerCase().includes('dead')
   );
 
   // Filter: only future confirmed shoots (no OPEN/fell-through/renewal, no past dates)
@@ -1947,7 +1979,7 @@ function LeadsPage({ openModal }) {
   const { data: raw, loading, error, retry } = useVaultFile('hot.md');
   const parsed   = raw ? parseHot(raw) : null;
   const allPipeline = (parsed || FB).pipeline;
-  const hotLeads = allPipeline.filter(l => l.numValue > 0 && !l.action.toLowerCase().startsWith('dead'));
+  const hotLeads = allPipeline.filter(l => !l.action.toLowerCase().startsWith('dead'));
 
   // Parse WARM leads live from hot.md WARM section
   const warmRaw = raw ? parseWarmFromHot(raw) : [];
@@ -2362,6 +2394,7 @@ function SkillsPage() {
   const [copied, setCopied] = useState(false);
   const [running, setRunning] = useState({});
   const [ran, setRan]         = useState({});
+  const [failed, setFailed]   = useState({});
   const [researchOpen,   setResearchOpen]   = useState(false);
   const [researchBiz,    setResearchBiz]    = useState('');
   const [researchStatus, setResearchStatus] = useState(null); // null | 'running' | 'done' | 'error'
@@ -2404,16 +2437,28 @@ function SkillsPage() {
     if (s.workflow) {
       if (running[i]) return;
       setRunning(r => ({ ...r, [i]: true }));
+      let ok = false, msg = '';
       try {
-        await fetch('/api/trigger', {
+        const resp = await fetch('/api/trigger', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ workflow: s.workflow }),
         });
-      } catch {}
+        ok = resp.ok;
+        if (!ok) {
+          const e = await resp.json().catch(() => ({}));
+          msg = e.error || ('HTTP ' + resp.status);
+        }
+      } catch (e) { msg = e.message || 'network error'; }
       setRunning(r => ({ ...r, [i]: false }));
-      setRan(r => ({ ...r, [i]: true }));
-      setTimeout(() => setRan(r => ({ ...r, [i]: false })), 3000);
+      if (ok) {
+        setRan(r => ({ ...r, [i]: true }));
+        setTimeout(() => setRan(r => ({ ...r, [i]: false })), 3000);
+      } else {
+        const label = /not configured/i.test(msg) ? 'Not wired yet · n8n webhook pending' : ('Failed: ' + msg);
+        setFailed(f => ({ ...f, [i]: label }));
+        setTimeout(() => setFailed(f => ({ ...f, [i]: null })), 6000);
+      }
     } else {
       openModal(s);
     }
@@ -2459,8 +2504,8 @@ function SkillsPage() {
                     {researchStatus === 'done' ? 'Done!' : I.arrow()}
                   </span>
               : s.workflow
-                ? <span className="sk-arrow" style={{ color: running[i] ? 'var(--gold)' : ran[i] ? 'var(--green)' : 'var(--ink-3)', fontSize: 11, letterSpacing: '.08em' }}>
-                    {running[i] ? 'Running...' : ran[i] ? 'Done!' : I.arrow()}
+                ? <span className="sk-arrow" style={{ color: running[i] ? 'var(--gold)' : ran[i] ? 'var(--green)' : failed[i] ? 'var(--red, #e05252)' : 'var(--ink-3)', fontSize: 11, letterSpacing: '.08em' }}>
+                    {running[i] ? 'Running...' : ran[i] ? 'Done!' : failed[i] ? failed[i] : I.arrow()}
                   </span>
                 : <span className="sk-arrow">{I.chev()}</span>}
           </div>
